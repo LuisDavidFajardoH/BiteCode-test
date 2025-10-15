@@ -385,66 +385,139 @@ function AntonIA() {
     ])
   }
 
-  const parsearRecetas = (texto) => {
-    const recetas = []
-    const secciones = texto.split('### ')
-    
-    secciones.forEach((seccion, index) => {
-      if (index === 0) return // Saltar el título principal
-      
-      const lineas = seccion.split('\n')
-      const nombre = lineas[0].replace(/^\d+\.\s*/, '').trim()
-      
-      let descripcion = ''
-      let ingredientes = []
-      let pasos = []
-      let categoria = ''
-      
-      let seccionActual = ''
-      for (let i = 1; i < lineas.length; i++) {
-        const linea = lineas[i].trim()
-        
-        if (linea.startsWith('**Descripción:**')) {
-          descripcion = linea.replace('**Descripción:**', '').trim()
-          seccionActual = 'descripcion'
-        } else if (linea.startsWith('**Ingredientes:**')) {
-          seccionActual = 'ingredientes'
-        } else if (linea.startsWith('**Pasos:**')) {
-          seccionActual = 'pasos'
-        } else if (linea.startsWith('**Categoría:**')) {
-          categoria = linea.replace('**Categoría:**', '').trim()
-        } else if (linea.startsWith('- ') && seccionActual === 'ingredientes') {
-          ingredientes.push(linea.replace('- ', '').trim())
-        } else if (/^\d+\./.test(linea) && seccionActual === 'pasos') {
-          pasos.push(linea.replace(/^\d+\.\s*/, '').trim())
-        } else if (linea && seccionActual === 'descripcion' && !descripcion) {
-          descripcion = linea
-        }
-      }
-      
-      if (nombre && descripcion) {
-        recetas.push({
-          nombre,
-          descripcion,
-          ingredientes,
-          pasos,
-          categoria
-        })
-      }
-    })
-    
-    return recetas
-  }
+       const parsearRecetas = (texto) => {
+         const recetas = []
+         const secciones = texto.split('### ')
+         
+         secciones.forEach((seccion, index) => {
+           if (index === 0) return // Saltar el título principal
+           
+           const lineas = seccion.split('\n')
+           const nombre = lineas[0].replace(/^\d+\.\s*/, '').trim()
+           
+           let descripcion = ''
+           let ingredientes = []
+           let pasos = []
+           let categoria = ''
+           let categoriaId = null
+           let tiempoPreparacion = ''
+           
+           let seccionActual = ''
+           for (let i = 1; i < lineas.length; i++) {
+             const linea = lineas[i].trim()
+             
+             if (linea.startsWith('**Descripción:**')) {
+               descripcion = linea.replace('**Descripción:**', '').trim()
+               seccionActual = 'descripcion'
+             } else if (linea.startsWith('**Ingredientes:**')) {
+               seccionActual = 'ingredientes'
+             } else if (linea.startsWith('**Pasos:**')) {
+               seccionActual = 'pasos'
+             } else if (linea.startsWith('**Tiempo de preparación:**')) {
+               tiempoPreparacion = linea.replace('**Tiempo de preparación:**', '').trim()
+             } else if (linea.startsWith('**Categoría:**')) {
+               categoria = linea.replace('**Categoría:**', '').trim()
+               // Extraer ID de la categoría si está en formato "ID: X - Nombre"
+               const idMatch = categoria.match(/ID:\s*(\d+)\s*-\s*(.+)/)
+               if (idMatch) {
+                 categoriaId = parseInt(idMatch[1]) // Extraer el ID
+                 categoria = idMatch[2].trim() // Solo el nombre
+               }
+             } else if (linea.startsWith('- ') && seccionActual === 'ingredientes') {
+               ingredientes.push(linea.replace('- ', '').trim())
+             } else if (/^\d+\./.test(linea) && seccionActual === 'pasos') {
+               pasos.push(linea.replace(/^\d+\.\s*/, '').trim())
+             } else if (linea && seccionActual === 'descripcion' && !descripcion) {
+               descripcion = linea
+             }
+           }
+           
+           // Si no se encontró tiempo de preparación, intentar extraerlo de la descripción
+           if (!tiempoPreparacion) {
+             const tiempoMatch = descripcion.match(/(\d+)\s*(minutos?|min|horas?|h)/i)
+             if (tiempoMatch) {
+               tiempoPreparacion = tiempoMatch[0]
+             }
+           }
+           
+           // Si no se encontró categoría, intentar inferirla del nombre o descripción
+           if (!categoria) {
+             const textoCompleto = (nombre + ' ' + descripcion).toLowerCase()
+             if (textoCompleto.includes('pasta') || textoCompleto.includes('pizza') || textoCompleto.includes('risotto')) {
+               categoria = 'Italiana'
+             } else if (textoCompleto.includes('tacos') || textoCompleto.includes('burritos') || textoCompleto.includes('enchiladas')) {
+               categoria = 'Mexicana'
+             } else if (textoCompleto.includes('curry') || textoCompleto.includes('wok') || textoCompleto.includes('teriyaki')) {
+               categoria = 'Asiática'
+             } else if (textoCompleto.includes('ensalada') || textoCompleto.includes('salad')) {
+               categoria = 'Ensaladas'
+             } else if (textoCompleto.includes('postre') || textoCompleto.includes('dulce') || textoCompleto.includes('tarta')) {
+               categoria = 'Postres'
+             } else if (textoCompleto.includes('pollo') || textoCompleto.includes('carne') || textoCompleto.includes('cerdo')) {
+               categoria = 'Carnes'
+             } else if (textoCompleto.includes('pescado') || textoCompleto.includes('salmón') || textoCompleto.includes('mariscos')) {
+               categoria = 'Pescados'
+             } else {
+               categoria = 'Carnes' // Categoría por defecto
+             }
+           }
+           
+           if (nombre && descripcion) {
+             recetas.push({
+               nombre,
+               descripcion,
+               ingredientes,
+               pasos,
+               categoria,
+               categoriaId,
+               tiempoPreparacion
+             })
+           }
+         })
+         
+         return recetas
+       }
 
   const guardarReceta = async (receta) => {
     try {
       setGuardandoReceta(true)
       
-      // Buscar la categoría por nombre o crear una por defecto
-      let categoriaId = categorias.find(cat => 
-        cat.nombre.toLowerCase().includes(receta.categoria.toLowerCase()) ||
-        receta.categoria.toLowerCase().includes(cat.nombre.toLowerCase())
-      )?.id_categoria
+      // Usar el ID de categoría si está disponible, sino buscar por nombre
+      let categoriaId = receta.categoriaId
+      
+      if (!categoriaId) {
+        // Buscar la categoría por nombre si no tenemos el ID
+        categoriaId = categorias.find(cat => {
+          const nombreCategoria = cat.nombre.toLowerCase()
+          const categoriaReceta = receta.categoria.toLowerCase()
+          
+          // Búsqueda exacta
+          if (nombreCategoria === categoriaReceta) return true
+          
+          // Búsqueda parcial
+          if (nombreCategoria.includes(categoriaReceta) || categoriaReceta.includes(nombreCategoria)) return true
+          
+          // Mapeo de categorías comunes
+          const mapeoCategorias = {
+            'italiana': ['italiana', 'pasta', 'pizza', 'risotto'],
+            'mexicana': ['mexicana', 'tacos', 'burritos', 'enchiladas'],
+            'asiática': ['asiática', 'china', 'japonesa', 'tailandesa', 'curry', 'wok'],
+            'ensaladas': ['ensaladas', 'salad', 'verde'],
+            'postres': ['postres', 'dulce', 'tarta', 'pastel'],
+            'vegetariana': ['vegetariana', 'vegano', 'vegetal'],
+            'carnes': ['carnes', 'carne', 'beef', 'pollo', 'cerdo'],
+            'pescados': ['pescados', 'pescado', 'mariscos', 'salmón']
+          }
+          
+          for (const [categoria, variantes] of Object.entries(mapeoCategorias)) {
+            if (variantes.some(v => nombreCategoria.includes(v) && categoriaReceta.includes(categoria))) {
+              return true
+            }
+          }
+          
+          return false
+        })?.id_categoria
+      }
       
       if (!categoriaId && categorias.length > 0) {
         categoriaId = categorias[0].id_categoria // Usar la primera categoría disponible
@@ -531,7 +604,7 @@ function AntonIA() {
         nombre: receta.nombre,
         descripcion: receta.descripcion,
         id_categoria: categoriaId || 1,
-        tiempo_preparacion: '30 min', // Valor por defecto
+        tiempo_preparacion: receta.tiempoPreparacion || '30 min', // Usar el tiempo de la IA o valor por defecto
         dificultad: 'Medio', // Valor por defecto (debe coincidir con el ENUM de la BD)
         ingredientes: ingredientesFinales
       }
@@ -580,7 +653,7 @@ function AntonIA() {
       const genAI = new GoogleGenerativeAI(apiKey)
       const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
-      const prompt = `Eres AntonIA, un asistente culinario amigable y experto. El usuario ${nombreUsuario} tiene estos ingredientes disponibles: ${ingredientesTexto}
+           const prompt = `Eres AntonIA, un asistente culinario amigable y experto. El usuario ${nombreUsuario} tiene estos ingredientes disponibles: ${ingredientesTexto}
 
 Tu tarea es generar ideas de recetas deliciosas y creativas. 
 
@@ -590,6 +663,19 @@ Instrucciones:
 3. Genera máximo 3 recetas diferentes y atractivas.
 4. Sé creativo y sugiere recetas que sorprendan al usuario.
 5. Responde en un tono amigable y entusiasta, como si fueras un chef experimentado.
+6. INCLUYE SIEMPRE el tiempo de preparación y la categoría específica.
+
+CATEGORÍAS DISPONIBLES (usa EXACTAMENTE una de estas con su ID):
+- ID: 1 - Italiana
+- ID: 2 - Mexicana  
+- ID: 3 - Asiática
+- ID: 4 - Ensaladas
+- ID: 5 - Postres
+- ID: 6 - Vegetariana
+- ID: 7 - Carnes
+- ID: 8 - Pescados
+
+FORMATO DE TIEMPO: Usa formato "X minutos" o "X horas" (ej: "25 minutos", "1 hora", "45 minutos")
 
 Formato de respuesta (usa markdown para mejor presentación):
 ## 🍽️ Recetas para ${nombreUsuario}
@@ -607,7 +693,8 @@ Formato de respuesta (usa markdown para mejor presentación):
 2. [Paso 2]
 3. [Paso 3]
 
-**Categoría:** [desayuno/almuerzo/cena/postre]
+**Tiempo de preparación:** [X minutos/horas]
+**Categoría:** [ID: X - Nombre de categoría] (ej: "ID: 3 - Asiática")
 
 ---
 
@@ -622,13 +709,14 @@ Formato de respuesta (usa markdown para mejor presentación):
       const response = await result.response
       const texto = response.text()
 
-      console.log('Resultado completo:', texto)
-      setResultado(texto)
-      agregarMensaje('bot', texto)
-      
-      // Parsear las recetas generadas
-      const recetas = parsearRecetas(texto)
-      setRecetasGeneradas(recetas)
+           console.log('Resultado completo:', texto)
+           setResultado(texto)
+           agregarMensaje('bot', texto)
+           
+           // Parsear las recetas generadas
+           const recetas = parsearRecetas(texto)
+           console.log('Recetas parseadas:', recetas)
+           setRecetasGeneradas(recetas)
       
       if (recetas.length > 0) {
         setPasoActual('seleccionar')
