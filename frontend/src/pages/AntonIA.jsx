@@ -281,16 +281,100 @@ const styles = {
     color: '#6b7280',
     lineHeight: '1.4'
   },
-  noGuardarButton: {
-    padding: '0.75rem 1.5rem',
-    background: 'rgba(255, 255, 255, 0.9)',
-    color: '#6b7280',
-    border: '1px solid #e5e7eb',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontSize: '0.9rem',
-    transition: 'all 0.3s ease'
-  }
+    noGuardarButton: {
+      padding: '0.75rem 1.5rem',
+      background: 'rgba(255, 255, 255, 0.9)',
+      color: '#6b7280',
+      border: '1px solid #e5e7eb',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontSize: '0.9rem',
+      transition: 'all 0.3s ease'
+    },
+    modalOverlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    },
+    modalContent: {
+      background: 'white',
+      borderRadius: '16px',
+      padding: '2rem',
+      maxWidth: '500px',
+      width: '90%',
+      maxHeight: '80vh',
+      overflow: 'auto',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+      animation: 'modalSlideIn 0.3s ease-out'
+    },
+    modalHeader: {
+      textAlign: 'center',
+      marginBottom: '1.5rem'
+    },
+    modalTitle: {
+      fontSize: '1.5rem',
+      fontWeight: '700',
+      color: '#10b981',
+      marginBottom: '0.5rem'
+    },
+    modalSubtitle: {
+      fontSize: '1rem',
+      color: '#6b7280',
+      marginBottom: '1rem'
+    },
+    recetaInfo: {
+      background: '#f8fafc',
+      borderRadius: '12px',
+      padding: '1rem',
+      marginBottom: '1.5rem'
+    },
+    recetaInfoTitle: {
+      fontSize: '1.1rem',
+      fontWeight: '600',
+      color: '#1f2937',
+      marginBottom: '0.5rem'
+    },
+    recetaInfoDesc: {
+      fontSize: '0.9rem',
+      color: '#6b7280',
+      lineHeight: '1.4',
+      marginBottom: '0.5rem'
+    },
+    recetaInfoMeta: {
+      display: 'flex',
+      gap: '1rem',
+      fontSize: '0.8rem',
+      color: '#9ca3af'
+    },
+    modalButtons: {
+      display: 'flex',
+      gap: '1rem',
+      justifyContent: 'center'
+    },
+    modalButton: {
+      padding: '0.75rem 1.5rem',
+      borderRadius: '8px',
+      border: 'none',
+      cursor: 'pointer',
+      fontSize: '0.9rem',
+      fontWeight: '600',
+      transition: 'all 0.3s ease'
+    },
+    modalButtonPrimary: {
+      background: 'linear-gradient(135deg, #10b981, #059669)',
+      color: 'white'
+    },
+    modalButtonSecondary: {
+      background: '#f3f4f6',
+      color: '#6b7280'
+    }
 }
 
 function AntonIA() {
@@ -308,6 +392,8 @@ function AntonIA() {
   const [recetasGeneradas, setRecetasGeneradas] = useState([])
   const [guardandoReceta, setGuardandoReceta] = useState(false)
   const [categorias, setCategorias] = useState([])
+  const [mostrarModalExito, setMostrarModalExito] = useState(false)
+  const [recetaGuardada, setRecetaGuardada] = useState(null)
   const [mensajes, setMensajes] = useState([
     {
       tipo: 'bot',
@@ -383,6 +469,11 @@ function AntonIA() {
         timestamp: new Date()
       }
     ])
+  }
+
+  const cerrarModalExito = () => {
+    setMostrarModalExito(false)
+    setRecetaGuardada(null)
   }
 
        const parsearRecetas = (texto) => {
@@ -612,7 +703,11 @@ function AntonIA() {
       console.log('Receta a guardar:', nuevaReceta)
       console.log('Ingredientes finales:', ingredientesFinales)
       
-      await recetasAPI.create(nuevaReceta)
+      const recetaCreada = await recetasAPI.create(nuevaReceta)
+      
+      // Mostrar modal de éxito
+      setRecetaGuardada(recetaCreada.data)
+      setMostrarModalExito(true)
       
       agregarMensaje('bot', `¡Perfecto! He guardado la receta "${receta.nombre}" en tu colección. Ya puedes encontrarla en la sección de Recetas. 🎉`)
       
@@ -894,6 +989,51 @@ Formato de respuesta (usa markdown para mejor presentación):
         )}
       </div>
 
+      {/* Modal de éxito */}
+      {mostrarModalExito && recetaGuardada && (
+        <div style={styles.modalOverlay} onClick={cerrarModalExito}>
+          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <div style={styles.modalTitle}>🎉 ¡Receta Guardada!</div>
+              <div style={styles.modalSubtitle}>
+                Tu receta ha sido guardada exitosamente en tu colección
+              </div>
+            </div>
+            
+            <div style={styles.recetaInfo}>
+              <div style={styles.recetaInfoTitle}>{recetaGuardada.nombre}</div>
+              <div style={styles.recetaInfoDesc}>
+                {recetaGuardada.descripcion?.substring(0, 150)}...
+              </div>
+              <div style={styles.recetaInfoMeta}>
+                <span>⏱️ {recetaGuardada.tiempo_preparacion || '30 min'}</span>
+                <span>📂 {recetaGuardada.Categoria?.nombre || 'Sin categoría'}</span>
+                <span>⭐ {recetaGuardada.dificultad}</span>
+              </div>
+            </div>
+
+            <div style={styles.modalButtons}>
+              <button
+                style={{...styles.modalButton, ...styles.modalButtonPrimary}}
+                onClick={() => {
+                  cerrarModalExito()
+                  // Opcional: navegar a la página de recetas
+                  window.location.href = '/recetas'
+                }}
+              >
+                Ver en Recetas
+              </button>
+              <button
+                style={{...styles.modalButton, ...styles.modalButtonSecondary}}
+                onClick={cerrarModalExito}
+              >
+                Continuar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes gradientShift {
           0%, 100% {
@@ -907,6 +1047,17 @@ Formato de respuesta (usa markdown para mejor presentación):
         @keyframes spin {
           to {
             transform: rotate(360deg);
+          }
+        }
+
+        @keyframes modalSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
           }
         }
       `}</style>
