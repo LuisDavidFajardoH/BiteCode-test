@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import ReactMarkdown from 'react-markdown'
 import { ingredientesAPI } from '../services/api'
 
 const styles = {
@@ -138,20 +139,150 @@ const styles = {
     borderRadius: '12px',
     textAlign: 'center',
     fontWeight: '600'
+  },
+  chatContainer: {
+    maxHeight: '500px',
+    overflowY: 'auto',
+    padding: '1rem',
+    background: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: '16px',
+    marginBottom: '1rem',
+    border: '1px solid rgba(255, 255, 255, 0.2)'
+  },
+  mensaje: {
+    marginBottom: '1rem',
+    padding: '0.75rem 1rem',
+    borderRadius: '12px',
+    maxWidth: '80%',
+    wordWrap: 'break-word'
+  },
+  mensajeBot: {
+    background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+    color: 'white',
+    marginRight: 'auto',
+    marginLeft: '0'
+  },
+  mensajeUsuario: {
+    background: 'rgba(255, 255, 255, 0.9)',
+    color: '#374151',
+    marginLeft: 'auto',
+    marginRight: '0',
+    border: '1px solid #e5e7eb'
+  },
+  inputContainer: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginBottom: '1rem'
+  },
+  chatInput: {
+    flex: 1,
+    padding: '0.75rem 1rem',
+    border: '2px solid #e5e7eb',
+    borderRadius: '12px',
+    fontSize: '1rem',
+    outline: 'none',
+    transition: 'all 0.3s ease'
+  },
+  chatButton: {
+    padding: '0.75rem 1.5rem',
+    background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    fontWeight: '600',
+    transition: 'all 0.3s ease',
+    whiteSpace: 'nowrap'
+  },
+  restartButton: {
+    padding: '0.5rem 1rem',
+    background: 'rgba(255, 255, 255, 0.9)',
+    color: '#6b7280',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    transition: 'all 0.3s ease'
+  },
+  markdownContent: {
+    lineHeight: '1.6',
+    fontSize: '0.95rem'
+  },
+  markdownH1: {
+    fontSize: '1.5rem',
+    fontWeight: '700',
+    marginBottom: '1rem',
+    color: 'inherit'
+  },
+  markdownH2: {
+    fontSize: '1.3rem',
+    fontWeight: '600',
+    marginTop: '1.5rem',
+    marginBottom: '0.8rem',
+    color: 'inherit'
+  },
+  markdownH3: {
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    marginTop: '1rem',
+    marginBottom: '0.5rem',
+    color: 'inherit'
+  },
+  markdownP: {
+    marginBottom: '0.8rem',
+    color: 'inherit'
+  },
+  markdownUl: {
+    marginBottom: '0.8rem',
+    paddingLeft: '1.2rem'
+  },
+  markdownLi: {
+    marginBottom: '0.3rem',
+    color: 'inherit'
+  },
+  markdownStrong: {
+    fontWeight: '600',
+    color: 'inherit'
+  },
+  markdownHr: {
+    border: 'none',
+    borderTop: '1px solid rgba(255, 255, 255, 0.3)',
+    margin: '1.5rem 0'
   }
 }
 
 function AntonIA() {
   const [ingredientesDisponibles, setIngredientesDisponibles] = useState([])
-  const [ingredientesSeleccionados, setIngredientesSeleccionados] = useState([])
   const [loading, setLoading] = useState(true)
   const [generando, setGenerando] = useState(false)
-  const [resultado, setResultado] = useState('')
   const [error, setError] = useState('')
+  
+  // Estados para el chat
+  const [chatMode, setChatMode] = useState(true)
+  const [nombreUsuario, setNombreUsuario] = useState('')
+  const [ingredientesTexto, setIngredientesTexto] = useState('')
+  const [pasoActual, setPasoActual] = useState('nombre') // 'nombre', 'ingredientes', 'resultado'
+  const [resultado, setResultado] = useState('')
+  const [mensajes, setMensajes] = useState([
+    {
+      tipo: 'bot',
+      contenido: '¡Hola! Soy AntonIA, tu asistente culinario inteligente. ¿Cómo te llamas?',
+      timestamp: new Date()
+    }
+  ])
 
   useEffect(() => {
     cargarIngredientes()
   }, [])
+
+  // Auto-scroll al final del chat
+  useEffect(() => {
+    const chatContainer = document.querySelector('[data-chat-container]')
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight
+    }
+  }, [mensajes])
 
   const cargarIngredientes = async () => {
     try {
@@ -166,24 +297,49 @@ function AntonIA() {
     }
   }
 
-  const toggleIngrediente = (ingredienteId) => {
-    if (ingredientesSeleccionados.includes(ingredienteId)) {
-      setIngredientesSeleccionados(ingredientesSeleccionados.filter(id => id !== ingredienteId))
-    } else {
-      setIngredientesSeleccionados([...ingredientesSeleccionados, ingredienteId])
+  const agregarMensaje = (tipo, contenido) => {
+    setMensajes(prev => [...prev, {
+      tipo,
+      contenido,
+      timestamp: new Date()
+    }])
+  }
+
+  const manejarNombre = () => {
+    if (nombreUsuario.trim()) {
+      agregarMensaje('usuario', nombreUsuario)
+      agregarMensaje('bot', `¡Perfecto, ${nombreUsuario}! Ahora cuéntame, ¿qué ingredientes tienes disponibles en tu cocina? Puedes escribir los ingredientes separados por comas.`)
+      setPasoActual('ingredientes')
     }
   }
 
-  const generarRecetas = async () => {
-    if (ingredientesSeleccionados.length === 0) {
-      setError('Por favor selecciona al menos un ingrediente')
-      return
+  const manejarIngredientes = () => {
+    if (ingredientesTexto.trim()) {
+      agregarMensaje('usuario', ingredientesTexto)
+      agregarMensaje('bot', 'Excelente, déjame pensar en algunas recetas deliciosas que puedas preparar con esos ingredientes...')
+      setPasoActual('resultado')
+      generarRecetasChat()
     }
+  }
 
+  const reiniciarChat = () => {
+    setNombreUsuario('')
+    setIngredientesTexto('')
+    setPasoActual('nombre')
+    setResultado('')
+    setMensajes([
+      {
+        tipo: 'bot',
+        contenido: '¡Hola! Soy AntonIA, tu asistente culinario inteligente. ¿Cómo te llamas?',
+        timestamp: new Date()
+      }
+    ])
+  }
+
+  const generarRecetasChat = async () => {
     try {
       setGenerando(true)
       setError('')
-      setResultado('')
 
       // Verificar API key
       const apiKey = import.meta.env.VITE_GOOGLE_CLOUD_API_KEY
@@ -192,54 +348,46 @@ function AntonIA() {
         return
       }
 
-      // Obtener nombres de ingredientes seleccionados
-      const nombresIngredientes = ingredientesSeleccionados.map(id => {
-        const ingrediente = ingredientesDisponibles.find(ing => ing.id_ingrediente === id)
-        return ingrediente ? ingrediente.nombre : ''
-      }).filter(nombre => nombre !== '')
-
-      const ingredientesTexto = nombresIngredientes.join(', ')
-      console.log('Ingredientes seleccionados:', ingredientesTexto)
+      console.log('Ingredientes del usuario:', ingredientesTexto)
 
       // Configuración de la IA
       const genAI = new GoogleGenerativeAI(apiKey)
       const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
-      const prompt = `Eres un asistente culinario experto en recetas. Tu tarea es generar ideas de recetas basadas en los ingredientes disponibles que el usuario proporcione. 
+      const prompt = `Eres AntonIA, un asistente culinario amigable y experto. El usuario ${nombreUsuario} tiene estos ingredientes disponibles: ${ingredientesTexto}
+
+Tu tarea es generar ideas de recetas deliciosas y creativas. 
 
 Instrucciones:
-1. Usa únicamente los ingredientes listados por el usuario.
-2. Si faltan ingredientes esenciales, sugiere cómo reemplazarlos o menciónalos como opcionales.
-3. Devuelve un máximo de 3 recetas posibles.
-4. Cada receta debe tener el siguiente formato:
-  - Nombre de la receta
-  - Descripción breve
-  - Ingredientes requeridos (con cantidades aproximadas)
-  - Pasos de preparación (numerados)
-  - Categoría recomendada (por ejemplo: desayuno, almuerzo, cena, postre)
+1. Usa principalmente los ingredientes que el usuario tiene disponibles.
+2. Si faltan ingredientes esenciales, sugiere alternativas o menciónalos como opcionales.
+3. Genera máximo 3 recetas diferentes y atractivas.
+4. Sé creativo y sugiere recetas que sorprendan al usuario.
+5. Responde en un tono amigable y entusiasta, como si fueras un chef experimentado.
 
-Ejemplo de entrada del usuario:
-"tengo arroz, pollo, cebolla y ajo"
+Formato de respuesta (usa markdown para mejor presentación):
+## 🍽️ Recetas para ${nombreUsuario}
 
-Ejemplo de respuesta esperada:
-1. Nombre: Arroz con pollo criollo
-  Descripción: Una receta clásica, sabrosa y fácil de preparar con tus ingredientes disponibles.
-  Ingredientes:
-  - Arroz: 1 taza
-  - Pollo: 250 g
-  - Cebolla: ½ unidad
-  - Ajo: 1 diente
-  - Sal y aceite al gusto
-  Pasos:
-  1. Sofríe el ajo y la cebolla.
-  2. Agrega el pollo y cocínalo hasta dorar.
-  3. Añade el arroz, mezcla bien y agrega agua.
-  4. Cocina hasta que el arroz esté listo.
-  Categoría: Almuerzo
+### 1. [Nombre de la receta]
+**Descripción:** [Descripción breve y atractiva]
 
-Entrada del usuario: ${ingredientesTexto}
+**Ingredientes:**
+- [Ingrediente 1]: [cantidad]
+- [Ingrediente 2]: [cantidad]
+- [Ingredientes adicionales si es necesario]
 
-Responde únicamente con el listado estructurado de recetas en formato texto.`
+**Pasos:**
+1. [Paso 1]
+2. [Paso 2]
+3. [Paso 3]
+
+**Categoría:** [desayuno/almuerzo/cena/postre]
+
+---
+
+[Repetir para las otras recetas]
+
+¡Que disfrutes cocinando, ${nombreUsuario}! 🧑‍🍳`
 
       console.log('Iniciando generación con modelo: gemini-2.5-flash')
       console.log('Prompt:', prompt.substring(0, 200) + '...')
@@ -250,26 +398,28 @@ Responde únicamente con el listado estructurado de recetas en formato texto.`
 
       console.log('Resultado completo:', texto)
       setResultado(texto)
+      agregarMensaje('bot', texto)
 
     } catch (error) {
       console.error('Error generando recetas:', error)
       console.error('Detalles del error:', error.message)
       
-      let mensajeError = 'Error al generar las recetas. '
+      let mensajeError = 'Lo siento, hubo un problema al generar las recetas. '
       
       if (error.message && error.message.includes('403')) {
-        mensajeError += 'La API de Google Generative Language no está habilitada. Ve a Google Cloud Console y habilita la API.'
+        mensajeError += 'La API de Google Generative Language no está habilitada.'
       } else if (error.message && error.message.includes('404') && error.message.includes('not found')) {
-        mensajeError += 'Modelo de IA no encontrado. Se ha cambiado a gemini-pro automáticamente.'
+        mensajeError += 'Modelo de IA no encontrado.'
       } else if (error.message && error.message.includes('PERMISSION_DENIED')) {
-        mensajeError += 'Permisos denegados. Verifica que la API esté habilitada y la API key sea válida.'
+        mensajeError += 'Permisos denegados. Verifica la configuración de la API.'
       } else if (error.message && error.message.includes('API key')) {
-        mensajeError += 'API key inválida. Verifica tu API key de Google Cloud.'
+        mensajeError += 'API key inválida.'
       } else {
-        mensajeError += `Error: ${error.message}. Verifica tu conexión a internet y la configuración de la API.`
+        mensajeError += 'Verifica tu conexión a internet.'
       }
       
       setError(mensajeError)
+      agregarMensaje('bot', mensajeError)
     } finally {
       setGenerando(false)
     }
@@ -280,68 +430,102 @@ Responde únicamente con el listado estructurado de recetas en formato texto.`
       <div style={styles.pageHeader}>
         <h1 style={styles.pageTitle}>AntonIA</h1>
         <p style={styles.pageDescription}>
-          Tu asistente culinario inteligente. Selecciona los ingredientes que tienes disponibles 
-          y te sugerirá recetas deliciosas que puedes preparar.
+          Tu asistente culinario inteligente. ¡Conversemos! Te preguntaré tu nombre y los ingredientes que tienes 
+          para sugerirte recetas deliciosas y personalizadas.
         </p>
+        <button
+          style={styles.restartButton}
+          onClick={reiniciarChat}
+        >
+          🔄 Reiniciar Conversación
+        </button>
       </div>
 
       <div style={styles.contentContainer}>
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Selecciona tus ingredientes disponibles</h2>
-          
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <div style={styles.loadingSpinner}></div>
-              <p>Cargando ingredientes...</p>
-            </div>
-          ) : (
-            <>
-              <div style={styles.ingredientesGrid}>
-                {ingredientesDisponibles.map(ingrediente => (
-                  <button
-                    key={ingrediente.id_ingrediente}
-                    style={{
-                      ...styles.ingredienteChip,
-                      ...(ingredientesSeleccionados.includes(ingrediente.id_ingrediente) 
-                        ? styles.ingredienteChipSelected 
-                        : {})
+        <div style={styles.chatContainer} data-chat-container>
+          {mensajes.map((mensaje, index) => (
+            <div
+              key={index}
+              style={{
+                ...styles.mensaje,
+                ...(mensaje.tipo === 'bot' ? styles.mensajeBot : styles.mensajeUsuario)
+              }}
+            >
+              {mensaje.tipo === 'bot' && <strong>AntonIA:</strong>} 
+              {mensaje.tipo === 'usuario' && <strong>Tú:</strong>} 
+              {mensaje.tipo === 'bot' ? (
+                <div style={styles.markdownContent}>
+                  <ReactMarkdown
+                    components={{
+                      h1: ({children}) => <h1 style={styles.markdownH1}>{children}</h1>,
+                      h2: ({children}) => <h2 style={styles.markdownH2}>{children}</h2>,
+                      h3: ({children}) => <h3 style={styles.markdownH3}>{children}</h3>,
+                      p: ({children}) => <p style={styles.markdownP}>{children}</p>,
+                      ul: ({children}) => <ul style={styles.markdownUl}>{children}</ul>,
+                      li: ({children}) => <li style={styles.markdownLi}>{children}</li>,
+                      strong: ({children}) => <strong style={styles.markdownStrong}>{children}</strong>,
+                      hr: () => <hr style={styles.markdownHr} />
                     }}
-                    onClick={() => toggleIngrediente(ingrediente.id_ingrediente)}
                   >
-                    {ingrediente.nombre}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                style={{
-                  ...styles.generateButton,
-                  ...(generando || ingredientesSeleccionados.length === 0 
-                    ? styles.generateButtonDisabled 
-                    : {})
-                }}
-                onClick={generarRecetas}
-                disabled={generando || ingredientesSeleccionados.length === 0}
-              >
-                {generando && <div style={styles.loadingSpinner}></div>}
-                {generando ? 'Generando recetas...' : 'Generar Recetas con IA'}
-              </button>
-            </>
+                    {mensaje.contenido}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                mensaje.contenido
+              )}
+            </div>
+          ))}
+          {generando && (
+            <div style={{...styles.mensaje, ...styles.mensajeBot}}>
+              <div style={styles.loadingSpinner}></div>
+              AntonIA está pensando...
+            </div>
           )}
         </div>
+
+        {pasoActual === 'nombre' && (
+          <div style={styles.inputContainer}>
+            <input
+              type="text"
+              style={styles.chatInput}
+              placeholder="Escribe tu nombre aquí..."
+              value={nombreUsuario}
+              onChange={(e) => setNombreUsuario(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && manejarNombre()}
+            />
+            <button
+              style={styles.chatButton}
+              onClick={manejarNombre}
+              disabled={!nombreUsuario.trim()}
+            >
+              Enviar
+            </button>
+          </div>
+        )}
+
+        {pasoActual === 'ingredientes' && (
+          <div style={styles.inputContainer}>
+            <input
+              type="text"
+              style={styles.chatInput}
+              placeholder="Ej: pollo, arroz, cebolla, ajo, tomate..."
+              value={ingredientesTexto}
+              onChange={(e) => setIngredientesTexto(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && manejarIngredientes()}
+            />
+            <button
+              style={styles.chatButton}
+              onClick={manejarIngredientes}
+              disabled={!ingredientesTexto.trim() || generando}
+            >
+              {generando ? 'Generando...' : 'Generar Recetas'}
+            </button>
+          </div>
+        )}
 
         {error && (
           <div style={styles.errorMessage}>
             {error}
-          </div>
-        )}
-
-        {resultado && (
-          <div style={styles.section}>
-            <h2 style={styles.sectionTitle}>Recetas sugeridas por AntonIA</h2>
-            <div style={styles.resultContainer}>
-              {resultado}
-            </div>
           </div>
         )}
       </div>
