@@ -1,5 +1,4 @@
-import { Box, Heading, Text, Flex, Button } from '@chakra-ui/react'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 function Home() {
   const features = [
@@ -30,79 +29,72 @@ function Home() {
   ]
 
   return (
-    <Box>
-      <Box textAlign="center" mb={10}>
-        <Heading 
-          size="2xl" 
-          mb={4} 
-          color="cyan.400"
-          textShadow="0 0 20px rgba(0, 255, 255, 0.8)"
-          fontFamily="monospace"
-          letterSpacing="2px"
-        >
-          BIENVENIDO AL RECETARIO DE COCINA
-        </Heading>
-        <Text 
-          fontSize="xl" 
-          color="gray.300" 
-          maxW="600px" 
-          mx="auto"
-          fontFamily="monospace"
-          letterSpacing="1px"
-        >
-          Organiza tus recetas, gestiona tus ingredientes y descubre qué puedes cocinar
-          con lo que tienes en casa.
-        </Text>
-      </Box>
+    <div>
+      <div className="hero-section">
+        <div className="hero-images">
+          <div className="hero-image side left">
+            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=400&fit=crop&crop=center" alt="Plato de comida" />
+          </div>
+          <div className="hero-image center">
+            <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500&h=500&fit=crop&crop=center" alt="Comida gourmet" />
+          </div>
+          <div className="hero-image side right">
+            <img src="https://images.unsplash.com/photo-1563379091339-03246963d96c?w=400&h=400&fit=crop&crop=center" alt="Receta gourmet" />
+          </div>
+        </div>
+        
+        <div className="hero-content">
+          <h1 className="hero-title">
+            FlavorFusion
+          </h1>
+          <p className="hero-subtitle">
+            Organiza tus recetas, gestiona tus ingredientes y descubre qué puedes cocinar
+            con lo que tienes en casa.
+          </p>
+          
+          <div className="hero-search">
+            <input 
+              type="text" 
+              className="search-input" 
+              placeholder="Buscar recetas..."
+            />
+            <div className="search-icon">🔍</div>
+          </div>
+        </div>
+      </div>
 
-      <Flex direction="column" gap={6}>
-        {features.map((feature, index) => (
-          <Box 
-            key={index} 
-            bg="rgba(0, 0, 0, 0.8)" 
-            p={6} 
-            borderRadius="md" 
-            border="2px solid"
-            borderColor={`${feature.color}.400`}
-            boxShadow={`0 0 20px rgba(${feature.color === 'green' ? '0, 255, 0' : feature.color === 'blue' ? '0, 100, 255' : feature.color === 'purple' ? '128, 0, 255' : '255, 165, 0'}, 0.3)`}
-            _hover={{
-              boxShadow: `0 0 30px rgba(${feature.color === 'green' ? '0, 255, 0' : feature.color === 'blue' ? '0, 100, 255' : feature.color === 'purple' ? '128, 0, 255' : '255, 165, 0'}, 0.6)`,
-              transform: "translateY(-2px)"
-            }}
-            transition="all 0.3s ease"
-          >
-            <Heading 
-              size="md" 
-              color={`${feature.color}.400`} 
-              mb={2}
-              fontFamily="monospace"
-              textShadow={`0 0 10px rgba(${feature.color === 'green' ? '0, 255, 0' : feature.color === 'blue' ? '0, 100, 255' : feature.color === 'purple' ? '128, 0, 255' : '255, 165, 0'}, 0.8)`}
-            >
-              {feature.title.toUpperCase()}
-            </Heading>
-            <Text color="gray.300" mb={4} fontFamily="monospace">
-              {feature.description}
-            </Text>
-            <Button 
-              as={RouterLink} 
-              to={feature.link} 
-              color={`${feature.color}.400`}
-              bg="transparent"
-              border="1px solid"
-              borderColor={`${feature.color}.400`}
-              size="sm"
-              fontFamily="monospace"
-              _hover={{
-                bg: `rgba(${feature.color === 'green' ? '0, 255, 0' : feature.color === 'blue' ? '0, 100, 255' : feature.color === 'purple' ? '128, 0, 255' : '255, 165, 0'}, 0.1)`,
-                boxShadow: `0 0 15px rgba(${feature.color === 'green' ? '0, 255, 0' : feature.color === 'blue' ? '0, 100, 255' : feature.color === 'purple' ? '128, 0, 255' : '255, 165, 0'}, 0.5)`
-              }}
-            >
-              IR A {feature.title.toUpperCase()}
-            </Button>
-          </Box>
-        ))}
-      </Flex>
-    </Box>
+      <div className="content-section">
+        <h2 className="content-title">
+          Utensilios Web
+        </h2>
+        <p className="content-description">
+          Explora todas las herramientas disponibles para gestionar tu cocina de manera eficiente
+        </p>
+
+        <Link to="/recetas" className="start-cooking-btn">
+          Start Cooking
+        </Link>
+
+        <div className="features-grid">
+          {features.map((feature, index) => (
+            <div key={index} className={`feature-card ${feature.color}`}>
+              <h3 className="feature-title">
+                {feature.title}
+              </h3>
+              <p className="feature-description">
+                {feature.description}
+              </p>
+              <Link 
+                to={feature.link} 
+                className={`feature-button ${feature.color}`}
+              >
+                Ir a {feature.title}
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
 
