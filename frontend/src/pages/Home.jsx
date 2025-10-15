@@ -31,15 +31,29 @@ function Home() {
   return (
     <div>
       <div className="hero-section">
-        <div className="hero-images">
-          <div className="hero-image side left">
-            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=400&fit=crop&crop=center" alt="Plato de comida" />
+        <div className="hero-plate">
+          <img src="/images/comida.png" alt="Comida gourmet" />
+        </div>
+        
+        <div className="hero-cards">
+          <div className="hero-card left">
+            <div className="card-image">
+              <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=300&h=200&fit=crop&crop=center" alt="Plato de comida" />
+            </div>
+            <div className="card-content">
+              <h3>Trending Recipes</h3>
+              <p>Descubre las recetas más populares y deliciosas de nuestra comunidad</p>
+            </div>
           </div>
-          <div className="hero-image center">
-            <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500&h=500&fit=crop&crop=center" alt="Comida gourmet" />
-          </div>
-          <div className="hero-image side right">
-            <img src="https://images.unsplash.com/photo-1563379091339-03246963d96c?w=400&h=400&fit=crop&crop=center" alt="Receta gourmet" />
+          
+          <div className="hero-card right">
+            <div className="card-image">
+              <img src="https://images.unsplash.com/photo-1563379091339-03246963d96c?w=300&h=200&fit=crop&crop=center" alt="Receta gourmet" />
+            </div>
+            <div className="card-content">
+              <h3>Explore Cuisines</h3>
+              <p>Viaja por el mundo a través de sabores auténticos y tradicionales</p>
+            </div>
           </div>
         </div>
         
@@ -54,7 +68,8 @@ function Home() {
           
           <div className="hero-search">
             <input 
-              type="text" 
+              type="text"
+              style={{color: 'black'}}
               className="search-input" 
               placeholder="Buscar recetas..."
             />

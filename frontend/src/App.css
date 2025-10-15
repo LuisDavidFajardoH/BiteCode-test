@@ -23,7 +23,7 @@
 
 .navbar {
   width: 100vw;
-  background: linear-gradient(135deg, #3B82F6, #EC4899, #8B5CF6);
+  background: #352b81;
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   padding: 1rem 1.5rem;
@@ -100,7 +100,7 @@
 
 .hero-content {
   position: relative;
-  z-index: 2;
+  z-index: 10;
   max-width: 800px;
   padding: 2rem;
 }
@@ -140,14 +140,14 @@
   border-radius: 2rem;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  color: white;
+  color: black;
   font-size: 1.1rem;
   outline: none;
   transition: all 0.3s ease;
 }
 
 .search-input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .search-input:focus {
@@ -160,22 +160,96 @@
   right: 1.5rem;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(0, 0, 0, 0.6);
   font-size: 1.2rem;
 }
 
-.hero-images {
+.hero-plate {
+  position: absolute;
+  bottom: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  pointer-events: none;
+  width: 500px;
+  height: 500px;
+  overflow: hidden;
+}
+
+.hero-plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.hero-cards {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 2rem;
+  justify-content: space-between;
+  padding: 0 2rem;
+}
+
+.hero-card {
+  width: 280px;
+  height: 350px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  transform: rotate(-5deg);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.hero-card.left {
+  transform: rotate(-8deg);
+}
+
+.hero-card.right {
+  transform: rotate(8deg);
+}
+
+.hero-card:hover {
+  transform: rotate(0deg) scale(1.05);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+}
+
+.card-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 1.5rem;
+}
+
+.card-content h3 {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.card-content p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .hero-image {
@@ -186,9 +260,7 @@
 }
 
 .hero-image.center {
-  width: 400px;
-  height: 400px;
-  transform: rotate(-5deg);
+  display: none;
 }
 
 .hero-image.side {
@@ -198,10 +270,18 @@
 
 .hero-image.left {
   transform: rotate(-15deg);
+  position: absolute;
+  left: 4rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(-15deg);
 }
 
 .hero-image.right {
   transform: rotate(15deg);
+  position: absolute;
+  right: 4rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(15deg);
 }
 
 .hero-image:hover {
