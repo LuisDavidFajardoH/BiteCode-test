@@ -5,6 +5,7 @@ import Ingredientes from './pages/Ingredientes'
 import Recetas from './pages/Recetas'
 import Compras from './pages/Compras'
 import BuscarRecetas from './pages/BuscarRecetas'
+import AntonIA from './pages/AntonIA'
 import './App.css'
 
 function App() {
@@ -111,6 +112,18 @@ function App() {
               >
                 Compras
               </Button>
+              <Button
+                as={Link}
+                to="/antonia"
+                variant="ghost"
+                color={buttonColor}
+                _hover={{ bg: buttonHoverBg, transform: 'translateY(-2px)' }}
+                _active={{ transform: 'translateY(0)' }}
+                transition="all 0.2s"
+                size="md"
+              >
+                AntonIA
+              </Button>
             </Flex>
           </Flex>
         </Box>
@@ -122,6 +135,7 @@ function App() {
             <Route path="/recetas" element={<Recetas />} />
             <Route path="/buscar-recetas" element={<BuscarRecetas />} />
             <Route path="/compras" element={<Compras />} />
+            <Route path="/antonia" element={<AntonIA />} />
           </Routes>
         </Box>
       </Box>
