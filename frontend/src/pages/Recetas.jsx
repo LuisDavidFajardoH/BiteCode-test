@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react'
-import { recetasAPI, categoriasAPI } from '../services/api'
+import { recetasAPI, categoriasAPI, ingredientesAPI } from '../services/api'
 
 function Recetas() {
   const [recetas, setRecetas] = useState([])
   const [categorias, setCategorias] = useState([])
+  const [ingredientesDisponibles, setIngredientesDisponibles] = useState([])
   const [loading, setLoading] = useState(true)
   const [nuevaReceta, setNuevaReceta] = useState({ 
     nombre: '', 
     descripcion: '', 
     categoria: '', 
     tiempo: '',
-    dificultad: 'Fácil'
+    dificultad: 'Fácil',
+    ingredientes: [{ id_ingrediente: '', cantidad: '' }]
   })
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [editandoReceta, setEditandoReceta] = useState(null)
@@ -22,12 +24,16 @@ function Recetas() {
   const cargarDatos = async () => {
     try {
       setLoading(true)
-      const [recetasResponse, categoriasResponse] = await Promise.all([
+      const [recetasResponse, categoriasResponse, ingredientesResponse] = await Promise.all([
         recetasAPI.getAll(),
-        categoriasAPI.getAll()
+        categoriasAPI.getAll(),
+        ingredientesAPI.getAll()
       ])
       setRecetas(recetasResponse.data)
       setCategorias(categoriasResponse.data)
+      setIngredientesDisponibles(ingredientesResponse.data)
+      console.log('Ingredientes cargados:', ingredientesResponse.data)
+      console.log('Cantidad de ingredientes:', ingredientesResponse.data.length)
     } catch (error) {
       console.error('Error cargando datos:', error)
     } finally {
@@ -39,7 +45,7 @@ function Recetas() {
     if (nuevaReceta.nombre && nuevaReceta.descripcion) {
       try {
         await recetasAPI.create(nuevaReceta)
-        setNuevaReceta({ nombre: '', descripcion: '', categoria: '', tiempo: '', dificultad: 'Fácil' })
+        setNuevaReceta({ nombre: '', descripcion: '', categoria: '', tiempo: '', dificultad: 'Fácil', ingredientes: [{ id_ingrediente: '', cantidad: '' }] })
         setMostrarFormulario(false)
         cargarDatos()
       } catch (error) {
@@ -55,16 +61,39 @@ function Recetas() {
       descripcion: receta.descripcion,
       categoria: receta.Categoria?.id_categoria || '',
       tiempo: receta.tiempo_preparacion,
-      dificultad: receta.dificultad
+      dificultad: receta.dificultad,
+      ingredientes: receta.Ingredientes?.map(ing => ({
+        id_ingrediente: ing.id_ingrediente,
+        cantidad: ing.IngredienteReceta.cantidad
+      })) || []
     })
     setMostrarFormulario(true)
+  }
+
+  const handleIngredienteChange = (index, field, value) => {
+    const nuevosIngredientes = [...nuevaReceta.ingredientes]
+    nuevosIngredientes[index] = { ...nuevosIngredientes[index], [field]: value }
+    setNuevaReceta({ ...nuevaReceta, ingredientes: nuevosIngredientes })
+  }
+
+  const addIngredienteField = () => {
+    console.log('Agregando ingrediente, ingredientes actuales:', nuevaReceta.ingredientes)
+    setNuevaReceta({
+      ...nuevaReceta,
+      ingredientes: [...nuevaReceta.ingredientes, { id_ingrediente: '', cantidad: '' }]
+    })
+  }
+
+  const removeIngredienteField = (index) => {
+    const nuevosIngredientes = nuevaReceta.ingredientes.filter((_, i) => i !== index)
+    setNuevaReceta({ ...nuevaReceta, ingredientes: nuevosIngredientes })
   }
 
   const actualizarReceta = async () => {
     if (nuevaReceta.nombre && nuevaReceta.descripcion && editandoReceta) {
       try {
         await recetasAPI.update(editandoReceta.id_receta, nuevaReceta)
-        setNuevaReceta({ nombre: '', descripcion: '', categoria: '', tiempo: '', dificultad: 'Fácil' })
+        setNuevaReceta({ nombre: '', descripcion: '', categoria: '', tiempo: '', dificultad: 'Fácil', ingredientes: [{ id_ingrediente: '', cantidad: '' }] })
         setEditandoReceta(null)
         setMostrarFormulario(false)
         cargarDatos()
@@ -75,7 +104,7 @@ function Recetas() {
   }
 
   const cancelarEdicion = () => {
-    setNuevaReceta({ nombre: '', descripcion: '', categoria: '', tiempo: '', dificultad: 'Fácil' })
+    setNuevaReceta({ nombre: '', descripcion: '', categoria: '', tiempo: '', dificultad: 'Fácil', ingredientes: [] })
     setEditandoReceta(null)
     setMostrarFormulario(false)
   }
@@ -155,6 +184,72 @@ function Recetas() {
                 <option value="Difícil">Difícil</option>
               </select>
             </div>
+
+            <div className="form-group">
+              <h4 style={{ marginBottom: '1rem', color: '#374151' }}>Ingredientes de la Receta</h4>
+              {console.log('Ingredientes disponibles en formulario:', ingredientesDisponibles)}
+              {console.log('Cantidad de ingredientes disponibles:', ingredientesDisponibles.length)}
+              {console.log('Ingredientes de la receta:', nuevaReceta.ingredientes)}
+              {nuevaReceta.ingredientes.map((ing, index) => (
+                <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
+                  <select
+                    value={ing.id_ingrediente}
+                    onChange={(e) => handleIngredienteChange(index, 'id_ingrediente', e.target.value)}
+                    style={{ flex: 2, padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '4px' }}
+                  >
+                    <option value="">Seleccionar ingrediente</option>
+                    {ingredientesDisponibles.length > 0 ? (
+                      ingredientesDisponibles.map(dispIng => (
+                        <option key={dispIng.id_ingrediente} value={dispIng.id_ingrediente}>
+                          {dispIng.nombre}
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>No hay ingredientes disponibles</option>
+                    )}
+                  </select>
+                  <input
+                    type="number"
+                    placeholder="Cantidad"
+                    value={ing.cantidad}
+                    onChange={(e) => handleIngredienteChange(index, 'cantidad', e.target.value)}
+                    step="0.1"
+                    style={{ flex: 1, padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '4px' }}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => removeIngredienteField(index)}
+                    style={{
+                      background: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '0.5rem',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem'
+                    }}
+                  >
+                    -
+                  </button>
+                </div>
+              ))}
+              <button 
+                type="button" 
+                onClick={addIngredienteField}
+                style={{
+                  background: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '0.5rem 1rem',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  marginTop: '0.5rem'
+                }}
+              >
+                + Añadir Ingrediente
+              </button>
+            </div>
             <div className="form-actions">
               <button className="cancel-button" onClick={cancelarEdicion}>
                 Cancelar
@@ -187,6 +282,16 @@ function Recetas() {
                 </div>
                 <div className="dificultad">
                   📊 {receta.dificultad}
+                </div>
+                <div className="ingredientes-list">
+                  <strong>Ingredientes:</strong>
+                  <ul>
+                    {receta.Ingredientes?.map(ing => (
+                      <li key={ing.id_ingrediente}>
+                        {ing.nombre} - {ing.IngredienteReceta.cantidad} {ing.unidad_medida}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
               <div className="card-actions">
