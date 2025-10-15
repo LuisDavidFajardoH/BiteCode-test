@@ -17,7 +17,11 @@ function Home() {
       description: 'Agrega, edita y elimina ingredientes de tu despensa',
       link: '/ingredientes',
       color: 'green',
-      icon: '🥕',
+      icon: (
+        <div style={{fontSize: '2.5rem', color: 'white'}}>
+          🥕
+        </div>
+      ),
       gradient: 'from-green-400 to-emerald-500'
     },
     {
@@ -25,7 +29,11 @@ function Home() {
       description: 'Crea y modifica recetas con sus ingredientes y cantidades',
       link: '/recetas',
       color: 'blue',
-      icon: '📖',
+      icon: (
+        <div style={{fontSize: '2.5rem', color: 'white'}}>
+          📖
+        </div>
+      ),
       gradient: 'from-blue-400 to-cyan-500'
     },
     {
@@ -33,7 +41,11 @@ function Home() {
       description: 'Encuentra recetas que puedes preparar con tus ingredientes',
       link: '/buscar-recetas',
       color: 'purple',
-      icon: '🔍',
+      icon: (
+        <div style={{fontSize: '2.5rem', color: 'white'}}>
+          🔍
+        </div>
+      ),
       gradient: 'from-purple-400 to-pink-500'
     },
     {
@@ -41,7 +53,11 @@ function Home() {
       description: 'Registra tus compras de ingredientes',
       link: '/compras',
       color: 'orange',
-      icon: '🛒',
+      icon: (
+        <div style={{fontSize: '2.5rem', color: 'white'}}>
+          🛒
+        </div>
+      ),
       gradient: 'from-orange-400 to-red-500'
     },
     {
@@ -49,7 +65,11 @@ function Home() {
       description: 'Tu asistente culinario inteligente con IA para generar recetas personalizadas',
       link: '/antonia',
       color: 'pink',
-      icon: '🤖',
+      icon: (
+        <div style={{fontSize: '2.5rem', color: 'white'}}>
+          🤖
+        </div>
+      ),
       gradient: 'from-pink-400 to-rose-500'
     }
   ]
@@ -101,7 +121,9 @@ function Home() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button type="submit" className="search-icon">🔍</button>
+            <button type="submit" className="search-icon">
+              🔍
+            </button>
           </form>
         </div>
       </div>
