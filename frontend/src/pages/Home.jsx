@@ -43,6 +43,14 @@ function Home() {
       color: 'orange',
       icon: '🛒',
       gradient: 'from-orange-400 to-red-500'
+    },
+    {
+      title: 'AntonIA',
+      description: 'Tu asistente culinario inteligente con IA para generar recetas personalizadas',
+      link: '/antonia',
+      color: 'pink',
+      icon: '🤖',
+      gradient: 'from-pink-400 to-rose-500'
     }
   ]
 
@@ -56,20 +64,20 @@ function Home() {
         <div className="hero-cards">
           <div className="hero-card left">
             <div className="card-image">
-              <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=300&h=200&fit=crop&crop=center" alt="Plato de comida" />
+              <img src="/images/pasta.jpg" alt="Plato de pasta" />
             </div>
             <div className="card-content">
-              <h3>Trending Recipes</h3>
+              <h3>Recetas Populares</h3>
               <p>Descubre las recetas más populares y deliciosas de nuestra comunidad</p>
             </div>
           </div>
           
           <div className="hero-card right">
             <div className="card-image">
-              <img src="https://images.unsplash.com/photo-1563379091339-03246963d96c?w=300&h=200&fit=crop&crop=center" alt="Receta gourmet" />
+              <img src="/images/paella.jpg" alt="Receta gourmet" />
             </div>
             <div className="card-content">
-              <h3>Explore Cuisines</h3>
+              <h3>Explora recetas</h3>
               <p>Viaja por el mundo a través de sabores auténticos y tradicionales</p>
             </div>
           </div>

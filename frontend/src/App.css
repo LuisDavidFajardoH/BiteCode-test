@@ -1471,6 +1471,14 @@
   animation: gradient-border-rotate 3.2s linear infinite;
 }
 
+.modern-feature-card.pink::before {
+  background: linear-gradient(45deg, 
+    #EC4899, #F472B6, #FB7185, #F43F5E, #EC4899
+  );
+  background-size: 300% 300%;
+  animation: gradient-border-rotate 3.8s linear infinite;
+}
+
 .feature-icon-container {
   display: flex;
   justify-content: center;
@@ -1545,6 +1553,11 @@
 
 .modern-feature-button.orange {
   background: linear-gradient(45deg, #f97316, #ef4444);
+  color: white;
+}
+
+.modern-feature-button.pink {
+  background: linear-gradient(45deg, #ec4899, #f43f5e);
   color: white;
 }
 
