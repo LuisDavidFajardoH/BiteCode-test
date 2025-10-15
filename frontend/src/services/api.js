@@ -10,8 +10,14 @@ const api = axios.create({
 export const ingredientesAPI = {
   getAll: () => api.get('/ingredientes'),
   getById: (id) => api.get(`/ingredientes/${id}`),
-  create: (data) => api.post('/ingredientes', data),
-  update: (id, data) => api.put(`/ingredientes/${id}`, data),
+  create: (data) => api.post('/ingredientes', {
+    nombre: data.nombre,
+    unidad_medida: data.unidad
+  }),
+  update: (id, data) => api.put(`/ingredientes/${id}`, {
+    nombre: data.nombre,
+    unidad_medida: data.unidad
+  }),
   delete: (id) => api.delete(`/ingredientes/${id}`),
 }
 

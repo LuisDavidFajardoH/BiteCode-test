@@ -1,29 +1,48 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { ingredientesAPI } from '../services/api'
 
 function Ingredientes() {
-  const [ingredientes, setIngredientes] = useState([
-    { id: 1, nombre: 'Tomate', unidad: 'kg' },
-    { id: 2, nombre: 'Cebolla', unidad: 'unidad' },
-    { id: 3, nombre: 'Ajo', unidad: 'diente' },
-    { id: 4, nombre: 'Aceite de oliva', unidad: 'ml' }
-  ])
-
+  const [ingredientes, setIngredientes] = useState([])
+  const [loading, setLoading] = useState(true)
   const [nuevoIngrediente, setNuevoIngrediente] = useState({ nombre: '', unidad: '' })
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
 
-  const agregarIngrediente = () => {
-    if (nuevoIngrediente.nombre && nuevoIngrediente.unidad) {
-      setIngredientes([...ingredientes, {
-        id: Date.now(),
-        ...nuevoIngrediente
-      }])
-      setNuevoIngrediente({ nombre: '', unidad: '' })
-      setMostrarFormulario(false)
+  useEffect(() => {
+    cargarIngredientes()
+  }, [])
+
+  const cargarIngredientes = async () => {
+    try {
+      setLoading(true)
+      const response = await ingredientesAPI.getAll()
+      setIngredientes(response.data)
+    } catch (error) {
+      console.error('Error cargando ingredientes:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const eliminarIngrediente = (id) => {
-    setIngredientes(ingredientes.filter(ing => ing.id !== id))
+  const agregarIngrediente = async () => {
+    if (nuevoIngrediente.nombre && nuevoIngrediente.unidad) {
+      try {
+        await ingredientesAPI.create(nuevoIngrediente)
+        setNuevoIngrediente({ nombre: '', unidad: '' })
+        setMostrarFormulario(false)
+        cargarIngredientes()
+      } catch (error) {
+        console.error('Error agregando ingrediente:', error)
+      }
+    }
+  }
+
+  const eliminarIngrediente = async (id) => {
+    try {
+      await ingredientesAPI.delete(id)
+      cargarIngredientes()
+    } catch (error) {
+      console.error('Error eliminando ingrediente:', error)
+    }
   }
 
   return (
