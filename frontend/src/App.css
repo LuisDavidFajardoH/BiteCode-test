@@ -460,6 +460,532 @@
   --button-color: #F59E0B;
 }
 
+.ingredientes-page {
+  padding: 2rem;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.add-button {
+  background: linear-gradient(45deg, #10B981, #059669);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.add-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+}
+
+.form-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.form-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 400px;
+}
+
+.form-container h3 {
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #10B981;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.cancel-button {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  background: white;
+  color: #6b7280;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-button:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.save-button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  background: linear-gradient(45deg, #10B981, #059669);
+  color: white;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.save-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.ingredientes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.ingrediente-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+  transition: all 0.3s ease;
+}
+
+.ingrediente-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card-content h3 {
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.card-content p {
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-button {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #3B82F6;
+  background: white;
+  color: #3B82F6;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-button:hover {
+  background: #3B82F6;
+  color: white;
+}
+
+.delete-button {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #EF4444;
+  background: white;
+  color: #EF4444;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-button:hover {
+  background: #EF4444;
+  color: white;
+}
+
+.recetas-page {
+  padding: 2rem;
+}
+
+.add-button.blue {
+  background: linear-gradient(45deg, #3B82F6, #1D4ED8);
+}
+
+.add-button.blue:hover {
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+.save-button.blue {
+  background: linear-gradient(45deg, #3B82F6, #1D4ED8);
+}
+
+.save-button.blue:hover {
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3B82F6;
+}
+
+.recetas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.receta-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+  transition: all 0.3s ease;
+}
+
+.receta-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.receta-card .card-content h3 {
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.receta-card .descripcion {
+  color: #6b7280;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.receta-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.categoria {
+  background: linear-gradient(45deg, #3B82F6, #1D4ED8);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.tiempo {
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.buscar-page {
+  padding: 2rem;
+}
+
+.search-section {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 3rem;
+  margin-top: 2rem;
+}
+
+.ingredientes-selector {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  height: fit-content;
+}
+
+.ingredientes-selector h3 {
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.ingredientes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.ingrediente-chip {
+  padding: 0.5rem 1rem;
+  border: 2px solid #e5e7eb;
+  background: white;
+  color: #6b7280;
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.ingrediente-chip:hover {
+  border-color: #8B5CF6;
+  color: #8B5CF6;
+}
+
+.ingrediente-chip.selected {
+  background: linear-gradient(45deg, #8B5CF6, #7C3AED);
+  color: white;
+  border-color: #8B5CF6;
+}
+
+.search-button {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(45deg, #8B5CF6, #7C3AED);
+  color: white;
+  border: none;
+  border-radius: 2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.search-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
+.search-button:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.results-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.results-section h3 {
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+.no-results {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+}
+
+.receta-meta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.receta-meta span {
+  background: #f3f4f6;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.ingredientes-list {
+  margin-bottom: 1rem;
+}
+
+.ingredientes-list ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 0.5rem;
+}
+
+.ingredientes-list li {
+  padding: 0.25rem 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.ingredientes-list li:before {
+  content: "• ";
+  color: #8B5CF6;
+  font-weight: bold;
+}
+
+.cook-button {
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(45deg, #8B5CF6, #7C3AED);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cook-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+}
+
+.compras-page {
+  padding: 2rem;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.total-gastado {
+  background: linear-gradient(45deg, #F59E0B, #D97706);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 2rem;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.add-button.orange {
+  background: linear-gradient(45deg, #F59E0B, #D97706);
+}
+
+.add-button.orange:hover {
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);
+}
+
+.save-button.orange {
+  background: linear-gradient(45deg, #F59E0B, #D97706);
+}
+
+.save-button.orange:hover {
+  box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.compras-table {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin-top: 2rem;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 2fr;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: bold;
+  color: #374151;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 2fr;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background: #f9fafb;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.ingrediente-cell strong {
+  color: #1f2937;
+}
+
+.cantidad-cell,
+.fecha-cell,
+.precio-cell {
+  color: #6b7280;
+}
+
+.precio-cell {
+  font-weight: bold;
+  color: #059669;
+}
+
+.acciones-cell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.acciones-cell .edit-button,
+.acciones-cell .delete-button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+}
+
 .page-container {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(20px);
