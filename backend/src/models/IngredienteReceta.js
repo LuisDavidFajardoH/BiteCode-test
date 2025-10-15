@@ -13,7 +13,7 @@ const IngredienteReceta = sequelize.define('IngredienteReceta', {
     field: 'id_receta'
   },
   cantidad: {
-    type: DataTypes.DECIMAL(10, 2),
+    type: DataTypes.STRING(100),
     allowNull: false
   }
 }, {

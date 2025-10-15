@@ -57,6 +57,15 @@ const createReceta = async (req, res) => {
   try {
     const { nombre, descripcion, id_categoria, tiempo_preparacion, dificultad, ingredientes } = req.body
     
+    console.log('Datos recibidos para crear receta:', {
+      nombre,
+      descripcion: descripcion?.substring(0, 100) + '...',
+      id_categoria,
+      tiempo_preparacion,
+      dificultad,
+      ingredientes: ingredientes?.length
+    })
+    
     if (!nombre) {
       return res.status(400).json({ error: 'El nombre es requerido' })
     }
@@ -70,11 +79,15 @@ const createReceta = async (req, res) => {
     })
     
     if (ingredientes && ingredientes.length > 0) {
+      console.log('Ingredientes a crear:', ingredientes)
+      
       const ingredientesData = ingredientes.map(ing => ({
         id_ingrediente: ing.id_ingrediente,
         id_receta: receta.id_receta,
         cantidad: ing.cantidad
       }))
+      
+      console.log('Datos de ingredientes procesados:', ingredientesData)
       
       await IngredienteReceta.bulkCreate(ingredientesData)
     }
@@ -97,6 +110,26 @@ const createReceta = async (req, res) => {
     
     res.status(201).json(recetaCompleta)
   } catch (error) {
+    console.error('Error creando receta:', error)
+    console.error('Detalles del error:', {
+      name: error.name,
+      message: error.message,
+      errors: error.errors,
+      stack: error.stack?.substring(0, 500)
+    })
+    
+    if (error.name === 'SequelizeValidationError') {
+      const validationErrors = error.errors.map(err => ({
+        field: err.path,
+        message: err.message,
+        value: err.value
+      }))
+      return res.status(400).json({ 
+        error: 'Validation error',
+        details: validationErrors 
+      })
+    }
+    
     res.status(500).json({ error: error.message })
   }
 }

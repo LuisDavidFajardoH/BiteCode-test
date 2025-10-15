@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS Recetas (
 CREATE TABLE IF NOT EXISTS Ingredientes_Recetas (
     id_ingrediente INT,
     id_receta INT,
-    cantidad DECIMAL(10,2) NOT NULL,
+    cantidad VARCHAR(100) NOT NULL,
     PRIMARY KEY (id_ingrediente, id_receta),
     FOREIGN KEY (id_ingrediente) REFERENCES Ingredientes(id_ingrediente) ON DELETE CASCADE,
     FOREIGN KEY (id_receta) REFERENCES Recetas(id_receta) ON DELETE CASCADE

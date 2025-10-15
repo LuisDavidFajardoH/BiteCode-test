@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import ReactMarkdown from 'react-markdown'
-import { ingredientesAPI } from '../services/api'
+import { ingredientesAPI, recetasAPI, categoriasAPI } from '../services/api'
 
 const styles = {
   page: {
@@ -249,6 +249,47 @@ const styles = {
     border: 'none',
     borderTop: '1px solid rgba(255, 255, 255, 0.3)',
     margin: '1.5rem 0'
+  },
+  recetaSelector: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+    marginTop: '1rem'
+  },
+  recetaButton: {
+    padding: '1rem',
+    background: 'rgba(255, 255, 255, 0.9)',
+    border: '2px solid #e5e7eb',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    textAlign: 'left'
+  },
+  recetaButtonHover: {
+    borderColor: '#8B5CF6',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(139, 92, 246, 0.2)'
+  },
+  recetaNombre: {
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: '0.5rem'
+  },
+  recetaDescripcion: {
+    fontSize: '0.9rem',
+    color: '#6b7280',
+    lineHeight: '1.4'
+  },
+  noGuardarButton: {
+    padding: '0.75rem 1.5rem',
+    background: 'rgba(255, 255, 255, 0.9)',
+    color: '#6b7280',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    transition: 'all 0.3s ease'
   }
 }
 
@@ -262,8 +303,11 @@ function AntonIA() {
   const [chatMode, setChatMode] = useState(true)
   const [nombreUsuario, setNombreUsuario] = useState('')
   const [ingredientesTexto, setIngredientesTexto] = useState('')
-  const [pasoActual, setPasoActual] = useState('nombre') // 'nombre', 'ingredientes', 'resultado'
+  const [pasoActual, setPasoActual] = useState('nombre') // 'nombre', 'ingredientes', 'resultado', 'seleccionar'
   const [resultado, setResultado] = useState('')
+  const [recetasGeneradas, setRecetasGeneradas] = useState([])
+  const [guardandoReceta, setGuardandoReceta] = useState(false)
+  const [categorias, setCategorias] = useState([])
   const [mensajes, setMensajes] = useState([
     {
       tipo: 'bot',
@@ -287,11 +331,15 @@ function AntonIA() {
   const cargarIngredientes = async () => {
     try {
       setLoading(true)
-      const response = await ingredientesAPI.getAll()
-      setIngredientesDisponibles(response.data)
+      const [ingredientesResponse, categoriasResponse] = await Promise.all([
+        ingredientesAPI.getAll(),
+        categoriasAPI.getAll()
+      ])
+      setIngredientesDisponibles(ingredientesResponse.data)
+      setCategorias(categoriasResponse.data)
     } catch (error) {
-      console.error('Error cargando ingredientes:', error)
-      setError('Error al cargar los ingredientes')
+      console.error('Error cargando datos:', error)
+      setError('Error al cargar los datos')
     } finally {
       setLoading(false)
     }
@@ -327,6 +375,7 @@ function AntonIA() {
     setIngredientesTexto('')
     setPasoActual('nombre')
     setResultado('')
+    setRecetasGeneradas([])
     setMensajes([
       {
         tipo: 'bot',
@@ -334,6 +383,183 @@ function AntonIA() {
         timestamp: new Date()
       }
     ])
+  }
+
+  const parsearRecetas = (texto) => {
+    const recetas = []
+    const secciones = texto.split('### ')
+    
+    secciones.forEach((seccion, index) => {
+      if (index === 0) return // Saltar el título principal
+      
+      const lineas = seccion.split('\n')
+      const nombre = lineas[0].replace(/^\d+\.\s*/, '').trim()
+      
+      let descripcion = ''
+      let ingredientes = []
+      let pasos = []
+      let categoria = ''
+      
+      let seccionActual = ''
+      for (let i = 1; i < lineas.length; i++) {
+        const linea = lineas[i].trim()
+        
+        if (linea.startsWith('**Descripción:**')) {
+          descripcion = linea.replace('**Descripción:**', '').trim()
+          seccionActual = 'descripcion'
+        } else if (linea.startsWith('**Ingredientes:**')) {
+          seccionActual = 'ingredientes'
+        } else if (linea.startsWith('**Pasos:**')) {
+          seccionActual = 'pasos'
+        } else if (linea.startsWith('**Categoría:**')) {
+          categoria = linea.replace('**Categoría:**', '').trim()
+        } else if (linea.startsWith('- ') && seccionActual === 'ingredientes') {
+          ingredientes.push(linea.replace('- ', '').trim())
+        } else if (/^\d+\./.test(linea) && seccionActual === 'pasos') {
+          pasos.push(linea.replace(/^\d+\.\s*/, '').trim())
+        } else if (linea && seccionActual === 'descripcion' && !descripcion) {
+          descripcion = linea
+        }
+      }
+      
+      if (nombre && descripcion) {
+        recetas.push({
+          nombre,
+          descripcion,
+          ingredientes,
+          pasos,
+          categoria
+        })
+      }
+    })
+    
+    return recetas
+  }
+
+  const guardarReceta = async (receta) => {
+    try {
+      setGuardandoReceta(true)
+      
+      // Buscar la categoría por nombre o crear una por defecto
+      let categoriaId = categorias.find(cat => 
+        cat.nombre.toLowerCase().includes(receta.categoria.toLowerCase()) ||
+        receta.categoria.toLowerCase().includes(cat.nombre.toLowerCase())
+      )?.id_categoria
+      
+      if (!categoriaId && categorias.length > 0) {
+        categoriaId = categorias[0].id_categoria // Usar la primera categoría disponible
+      }
+      
+      // Mapear ingredientes por nombre
+      const ingredientesMapeados = receta.ingredientes.map(ing => {
+        // Manejar diferentes formatos: "nombre: cantidad" o solo "nombre"
+        let nombreIng, cantidad
+        if (ing.includes(':')) {
+          [nombreIng, cantidad] = ing.split(':').map(s => s.trim())
+        } else {
+          nombreIng = ing.trim()
+          cantidad = '1 unidad'
+        }
+        
+        // Buscar el ingrediente por nombre en la base de datos (búsqueda flexible)
+        const ingredienteEncontrado = ingredientesDisponibles.find(ingDB => {
+          const nombreDB = ingDB.nombre.toLowerCase()
+          const nombreBuscado = nombreIng.toLowerCase()
+          
+          // Búsqueda exacta
+          if (nombreDB === nombreBuscado) return true
+          
+          // Búsqueda parcial (contiene)
+          if (nombreDB.includes(nombreBuscado) || nombreBuscado.includes(nombreDB)) return true
+          
+          // Búsqueda por palabras clave comunes
+          const palabrasClave = {
+            'pollo': ['pollo', 'chicken', 'muslo', 'pechuga'],
+            'cebolla': ['cebolla', 'onion'],
+            'ajo': ['ajo', 'garlic'],
+            'tomate': ['tomate', 'tomato'],
+            'arroz': ['arroz', 'rice'],
+            'aceite': ['aceite', 'oil'],
+            'sal': ['sal', 'salt'],
+            'pimienta': ['pimienta', 'pepper']
+          }
+          
+          for (const [clave, variantes] of Object.entries(palabrasClave)) {
+            if (variantes.some(v => nombreDB.includes(v) && nombreBuscado.includes(clave))) {
+              return true
+            }
+          }
+          
+          return false
+        })
+        
+        console.log(`Buscando ingrediente: "${nombreIng}" -> Encontrado:`, ingredienteEncontrado)
+        
+        return {
+          id_ingrediente: ingredienteEncontrado?.id_ingrediente || null,
+          cantidad: cantidad || '1 unidad'
+        }
+      }).filter(ing => ing.id_ingrediente !== null) // Solo incluir ingredientes que existen en la BD
+      
+      // Agrupar ingredientes duplicados y combinar cantidades
+      const ingredientesUnicos = {}
+      ingredientesMapeados.forEach(ing => {
+        const key = ing.id_ingrediente
+        if (ingredientesUnicos[key]) {
+          // Si ya existe, combinar las cantidades
+          ingredientesUnicos[key].cantidad = `${ingredientesUnicos[key].cantidad} + ${ing.cantidad}`
+        } else {
+          ingredientesUnicos[key] = ing
+        }
+      })
+      
+      const ingredientesFinales = Object.values(ingredientesUnicos)
+      
+      console.log('Ingredientes disponibles:', ingredientesDisponibles.map(ing => ing.nombre))
+      console.log('Ingredientes de la receta:', receta.ingredientes)
+      console.log('Ingredientes mapeados:', ingredientesMapeados)
+      console.log('Ingredientes finales (sin duplicados):', ingredientesFinales)
+
+      // Validar que tengamos al menos algunos ingredientes
+      if (ingredientesFinales.length === 0) {
+        agregarMensaje('bot', 'Lo siento, no pude encontrar ninguno de los ingredientes de esta receta en tu base de datos. Asegúrate de tener los ingredientes agregados en la sección de Ingredientes.')
+        return
+      }
+
+      // Crear la receta
+      const nuevaReceta = {
+        nombre: receta.nombre,
+        descripcion: receta.descripcion,
+        id_categoria: categoriaId || 1,
+        tiempo_preparacion: '30 min', // Valor por defecto
+        dificultad: 'Medio', // Valor por defecto (debe coincidir con el ENUM de la BD)
+        ingredientes: ingredientesFinales
+      }
+      
+      console.log('Receta a guardar:', nuevaReceta)
+      console.log('Ingredientes finales:', ingredientesFinales)
+      
+      await recetasAPI.create(nuevaReceta)
+      
+      agregarMensaje('bot', `¡Perfecto! He guardado la receta "${receta.nombre}" en tu colección. Ya puedes encontrarla en la sección de Recetas. 🎉`)
+      
+    } catch (error) {
+      console.error('Error guardando receta:', error)
+      console.error('Detalles del error:', error.response?.data || error.message)
+      
+      let mensajeError = 'Lo siento, hubo un problema al guardar la receta. '
+      if (error.response?.data?.error?.includes('dificultad')) {
+        mensajeError += 'Error en el campo de dificultad.'
+      } else if (error.response?.data?.error?.includes('Data truncated')) {
+        mensajeError += 'Algunos datos son demasiado largos para la base de datos.'
+      } else {
+        mensajeError += 'Inténtalo de nuevo.'
+      }
+      
+      agregarMensaje('bot', mensajeError)
+    } finally {
+      setGuardandoReceta(false)
+    }
   }
 
   const generarRecetasChat = async () => {
@@ -399,6 +625,15 @@ Formato de respuesta (usa markdown para mejor presentación):
       console.log('Resultado completo:', texto)
       setResultado(texto)
       agregarMensaje('bot', texto)
+      
+      // Parsear las recetas generadas
+      const recetas = parsearRecetas(texto)
+      setRecetasGeneradas(recetas)
+      
+      if (recetas.length > 0) {
+        setPasoActual('seleccionar')
+        agregarMensaje('bot', '¿Te gustaría guardar alguna de estas recetas en tu colección? Selecciona la que más te guste:')
+      }
 
     } catch (error) {
       console.error('Error generando recetas:', error)
@@ -519,6 +754,47 @@ Formato de respuesta (usa markdown para mejor presentación):
               disabled={!ingredientesTexto.trim() || generando}
             >
               {generando ? 'Generando...' : 'Generar Recetas'}
+            </button>
+          </div>
+        )}
+
+        {pasoActual === 'seleccionar' && recetasGeneradas.length > 0 && (
+          <div style={styles.recetaSelector}>
+            {recetasGeneradas.map((receta, index) => (
+              <button
+                key={index}
+                style={styles.recetaButton}
+                onClick={() => guardarReceta(receta)}
+                disabled={guardandoReceta}
+                onMouseEnter={(e) => {
+                  e.target.style.borderColor = '#8B5CF6'
+                  e.target.style.transform = 'translateY(-2px)'
+                  e.target.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.2)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.borderColor = '#e5e7eb'
+                  e.target.style.transform = 'translateY(0)'
+                  e.target.style.boxShadow = 'none'
+                }}
+              >
+                <div style={styles.recetaNombre}>
+                  {index + 1}. {receta.nombre}
+                </div>
+                <div style={styles.recetaDescripcion}>
+                  {receta.descripcion}
+                </div>
+              </button>
+            ))}
+            <button
+              style={styles.noGuardarButton}
+              onClick={() => {
+                agregarMensaje('usuario', 'No guardar ninguna receta')
+                agregarMensaje('bot', 'Perfecto, no hay problema. ¡Espero que hayas disfrutado las sugerencias! Si necesitas más recetas, solo dime qué ingredientes tienes disponibles. 😊')
+                setPasoActual('resultado')
+              }}
+              disabled={guardandoReceta}
+            >
+              No guardar ninguna receta
             </button>
           </div>
         )}
