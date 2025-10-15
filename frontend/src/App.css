@@ -349,36 +349,30 @@
 }
 
 .features-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-@media (min-width: 768px) {
-  .features-grid {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
 }
 
 .feature-card {
-  flex: 1;
-  min-width: 300px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20px);
+  background: white;
+  border-radius: 1.5rem;
   padding: 2rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  transition: all 0.4s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .feature-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
 }
 
 .feature-card::before {
@@ -412,36 +406,40 @@
 }
 
 .feature-title {
-  font-size: 1.5rem;
-  color: white;
+  font-size: 1.4rem;
+  color: #1f2937;
   margin-bottom: 1rem;
   font-weight: bold;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .feature-description {
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 1.5rem;
+  color: #6b7280;
+  margin-bottom: 2rem;
   font-size: 1rem;
   line-height: 1.6;
+  flex-grow: 1;
 }
 
 .feature-button {
   color: white;
   background: var(--button-color);
   border: none;
-  padding: 0.75rem 2rem;
+  padding: 0.875rem 1.5rem;
   border-radius: 2rem;
-  font-weight: bold;
+  font-weight: 600;
   text-decoration: none;
   display: inline-block;
   transition: all 0.3s ease;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  text-align: center;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .feature-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .feature-button.green {
