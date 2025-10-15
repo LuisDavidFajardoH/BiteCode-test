@@ -862,6 +862,43 @@
   font-weight: bold;
 }
 
+.filter-section {
+  margin-bottom: 2rem;
+}
+
+.filter-section h4 {
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.category-filter {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background: white;
+  color: #1f2937;
+  transition: border-color 0.3s ease;
+}
+
+.category-filter:focus {
+  outline: none;
+  border-color: #8B5CF6;
+}
+
+.ingrediente-cantidad {
+  font-weight: bold;
+  color: #8B5CF6;
+  margin-right: 0.5rem;
+}
+
+.ingrediente-nombre {
+  color: #6b7280;
+}
+
 .cook-button {
   width: 100%;
   padding: 0.75rem;
@@ -982,6 +1019,13 @@
 .acciones-cell .delete-button {
   padding: 0.25rem 0.75rem;
   font-size: 0.8rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+  font-size: 1.1rem;
 }
 
 .page-container {

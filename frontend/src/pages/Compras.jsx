@@ -1,25 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { comprasAPI, ingredientesAPI } from '../services/api'
 
 function Compras() {
-  const [compras, setCompras] = useState([
-    { 
-      id: 1, 
-      ingrediente: 'Tomate', 
-      cantidad: 2, 
-      unidad: 'kg', 
-      fecha: '2024-01-15',
-      precio: 3.50
-    },
-    { 
-      id: 2, 
-      ingrediente: 'Cebolla', 
-      cantidad: 1, 
-      unidad: 'kg', 
-      fecha: '2024-01-14',
-      precio: 2.00
-    }
-  ])
-
+  const [compras, setCompras] = useState([])
+  const [ingredientes, setIngredientes] = useState([])
+  const [totalGastado, setTotalGastado] = useState(0)
+  const [loading, setLoading] = useState(true)
   const [nuevaCompra, setNuevaCompra] = useState({ 
     ingrediente: '', 
     cantidad: '', 
@@ -27,28 +13,62 @@ function Compras() {
     fecha: '',
     precio: ''
   })
+
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
 
-  const ingredientes = ['Tomate', 'Cebolla', 'Ajo', 'Aceite de oliva', 'Pasta', 'Queso', 'Pollo', 'Carne']
+  const handleIngredienteChange = (ingredienteId) => {
+    const ingredienteSeleccionado = ingredientes.find(ing => ing.id_ingrediente == ingredienteId)
+    setNuevaCompra({
+      ...nuevaCompra,
+      ingrediente: ingredienteId,
+      unidad: ingredienteSeleccionado ? ingredienteSeleccionado.unidad_medida : ''
+    })
+  }
 
-  const agregarCompra = () => {
-    if (nuevaCompra.ingrediente && nuevaCompra.cantidad && nuevaCompra.fecha) {
-      setCompras([...compras, {
-        id: Date.now(),
-        ...nuevaCompra,
-        cantidad: parseFloat(nuevaCompra.cantidad),
-        precio: parseFloat(nuevaCompra.precio) || 0
-      }])
-      setNuevaCompra({ ingrediente: '', cantidad: '', unidad: '', fecha: '', precio: '' })
-      setMostrarFormulario(false)
+  useEffect(() => {
+    cargarDatos()
+  }, [])
+
+  const cargarDatos = async () => {
+    try {
+      setLoading(true)
+      const [comprasResponse, ingredientesResponse, totalResponse] = await Promise.all([
+        comprasAPI.getAll(),
+        ingredientesAPI.getAll(),
+        comprasAPI.getTotal()
+      ])
+      console.log('Ingredientes cargados:', ingredientesResponse.data)
+      setCompras(comprasResponse.data)
+      setIngredientes(ingredientesResponse.data)
+      setTotalGastado(parseFloat(totalResponse.data.total))
+    } catch (error) {
+      console.error('Error cargando datos:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const eliminarCompra = (id) => {
-    setCompras(compras.filter(comp => comp.id !== id))
+  const agregarCompra = async () => {
+    if (nuevaCompra.ingrediente && nuevaCompra.cantidad && nuevaCompra.fecha) {
+      try {
+        await comprasAPI.create(nuevaCompra)
+        setNuevaCompra({ ingrediente: '', cantidad: '', unidad: '', fecha: '', precio: '' })
+        setMostrarFormulario(false)
+        await cargarDatos()
+      } catch (error) {
+        console.error('Error agregando compra:', error)
+      }
+    }
   }
 
-  const totalGastado = compras.reduce((total, compra) => total + (compra.precio || 0), 0)
+  const eliminarCompra = async (id) => {
+    try {
+      await comprasAPI.delete(id)
+      cargarDatos()
+    } catch (error) {
+      console.error('Error eliminando compra:', error)
+    }
+  }
 
   return (
     <div className="compras-page">
@@ -77,12 +97,16 @@ function Compras() {
             <div className="form-group">
               <select
                 value={nuevaCompra.ingrediente}
-                onChange={(e) => setNuevaCompra({...nuevaCompra, ingrediente: e.target.value})}
+                onChange={(e) => handleIngredienteChange(e.target.value)}
               >
                 <option value="">Seleccionar ingrediente</option>
-                {ingredientes.map(ing => (
-                  <option key={ing} value={ing}>{ing}</option>
-                ))}
+                {ingredientes.length > 0 ? (
+                  ingredientes.map(ing => (
+                    <option key={ing.id_ingrediente} value={ing.id_ingrediente}>{ing.nombre}</option>
+                  ))
+                ) : (
+                  <option disabled>No hay ingredientes disponibles</option>
+                )}
               </select>
             </div>
             <div className="form-row">
@@ -96,17 +120,13 @@ function Compras() {
                 />
               </div>
               <div className="form-group">
-                <select
+                <input
+                  type="text"
+                  placeholder="Unidad"
                   value={nuevaCompra.unidad}
                   onChange={(e) => setNuevaCompra({...nuevaCompra, unidad: e.target.value})}
-                >
-                  <option value="">Unidad</option>
-                  <option value="kg">kg</option>
-                  <option value="g">g</option>
-                  <option value="l">l</option>
-                  <option value="ml">ml</option>
-                  <option value="unidad">unidad</option>
-                </select>
+                  readOnly
+                />
               </div>
             </div>
             <div className="form-row">
@@ -139,40 +159,46 @@ function Compras() {
         </div>
       )}
 
-      <div className="compras-table">
-        <div className="table-header">
-          <div>Ingrediente</div>
-          <div>Cantidad</div>
-          <div>Fecha</div>
-          <div>Precio</div>
-          <div>Acciones</div>
+      {loading ? (
+        <div className="loading">
+          <p>Cargando compras...</p>
         </div>
-        {compras.map(compra => (
-          <div key={compra.id} className="table-row">
-            <div className="ingrediente-cell">
-              <strong>{compra.ingrediente}</strong>
-            </div>
-            <div className="cantidad-cell">
-              {compra.cantidad} {compra.unidad}
-            </div>
-            <div className="fecha-cell">
-              {new Date(compra.fecha).toLocaleDateString()}
-            </div>
-            <div className="precio-cell">
-              ${compra.precio.toFixed(2)}
-            </div>
-            <div className="acciones-cell">
-              <button className="edit-button">Editar</button>
-              <button 
-                className="delete-button"
-                onClick={() => eliminarCompra(compra.id)}
-              >
-                Eliminar
-              </button>
-            </div>
+      ) : (
+        <div className="compras-table">
+          <div className="table-header">
+            <div>Ingrediente</div>
+            <div>Cantidad</div>
+            <div>Fecha</div>
+            <div>Precio</div>
+            <div>Acciones</div>
           </div>
-        ))}
-      </div>
+          {compras.map(compra => (
+            <div key={compra.id_compra} className="table-row">
+              <div className="ingrediente-cell">
+                <strong>{compra.Ingrediente?.nombre || 'Ingrediente no encontrado'}</strong>
+              </div>
+              <div className="cantidad-cell">
+                {compra.cantidad} {compra.Ingrediente?.unidad_medida || ''}
+              </div>
+              <div className="fecha-cell">
+                {new Date(compra.fecha_compra).toLocaleDateString()}
+              </div>
+              <div className="precio-cell">
+                ${parseFloat(compra.precio).toFixed(2)}
+              </div>
+              <div className="acciones-cell">
+                <button className="edit-button">Editar</button>
+                <button 
+                  className="delete-button"
+                  onClick={() => eliminarCompra(compra.id_compra)}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

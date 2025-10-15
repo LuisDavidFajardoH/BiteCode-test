@@ -1,44 +1,59 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { recetasAPI, categoriasAPI } from '../services/api'
 
 function Recetas() {
-  const [recetas, setRecetas] = useState([
-    { 
-      id: 1, 
-      nombre: 'Pasta con Salsa de Tomate', 
-      descripcion: 'Deliciosa pasta con salsa casera de tomate',
-      categoria: 'Italiana',
-      tiempo: '30 min'
-    },
-    { 
-      id: 2, 
-      nombre: 'Ensalada César', 
-      descripcion: 'Ensalada fresca con aderezo césar casero',
-      categoria: 'Ensaladas',
-      tiempo: '15 min'
-    }
-  ])
-
+  const [recetas, setRecetas] = useState([])
+  const [categorias, setCategorias] = useState([])
+  const [loading, setLoading] = useState(true)
   const [nuevaReceta, setNuevaReceta] = useState({ 
     nombre: '', 
     descripcion: '', 
     categoria: '', 
-    tiempo: '' 
+    tiempo: '',
+    dificultad: 'Fácil'
   })
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
 
-  const agregarReceta = () => {
-    if (nuevaReceta.nombre && nuevaReceta.descripcion) {
-      setRecetas([...recetas, {
-        id: Date.now(),
-        ...nuevaReceta
-      }])
-      setNuevaReceta({ nombre: '', descripcion: '', categoria: '', tiempo: '' })
-      setMostrarFormulario(false)
+  useEffect(() => {
+    cargarDatos()
+  }, [])
+
+  const cargarDatos = async () => {
+    try {
+      setLoading(true)
+      const [recetasResponse, categoriasResponse] = await Promise.all([
+        recetasAPI.getAll(),
+        categoriasAPI.getAll()
+      ])
+      setRecetas(recetasResponse.data)
+      setCategorias(categoriasResponse.data)
+    } catch (error) {
+      console.error('Error cargando datos:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const eliminarReceta = (id) => {
-    setRecetas(recetas.filter(rec => rec.id !== id))
+  const agregarReceta = async () => {
+    if (nuevaReceta.nombre && nuevaReceta.descripcion) {
+      try {
+        await recetasAPI.create(nuevaReceta)
+        setNuevaReceta({ nombre: '', descripcion: '', categoria: '', tiempo: '', dificultad: 'Fácil' })
+        setMostrarFormulario(false)
+        cargarDatos()
+      } catch (error) {
+        console.error('Error agregando receta:', error)
+      }
+    }
+  }
+
+  const eliminarReceta = async (id) => {
+    try {
+      await recetasAPI.delete(id)
+      cargarDatos()
+    } catch (error) {
+      console.error('Error eliminando receta:', error)
+    }
   }
 
   return (
@@ -82,12 +97,11 @@ function Recetas() {
                 onChange={(e) => setNuevaReceta({...nuevaReceta, categoria: e.target.value})}
               >
                 <option value="">Seleccionar categoría</option>
-                <option value="Italiana">Italiana</option>
-                <option value="Mexicana">Mexicana</option>
-                <option value="Asiática">Asiática</option>
-                <option value="Ensaladas">Ensaladas</option>
-                <option value="Postres">Postres</option>
-                <option value="Vegetariana">Vegetariana</option>
+                {categorias.map(cat => (
+                  <option key={cat.id_categoria} value={cat.id_categoria}>
+                    {cat.nombre}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="form-group">
@@ -97,6 +111,16 @@ function Recetas() {
                 value={nuevaReceta.tiempo}
                 onChange={(e) => setNuevaReceta({...nuevaReceta, tiempo: e.target.value})}
               />
+            </div>
+            <div className="form-group">
+              <select
+                value={nuevaReceta.dificultad}
+                onChange={(e) => setNuevaReceta({...nuevaReceta, dificultad: e.target.value})}
+              >
+                <option value="Fácil">Fácil</option>
+                <option value="Medio">Medio</option>
+                <option value="Difícil">Difícil</option>
+              </select>
             </div>
             <div className="form-actions">
               <button className="cancel-button" onClick={() => setMostrarFormulario(false)}>
@@ -110,29 +134,38 @@ function Recetas() {
         </div>
       )}
 
-      <div className="recetas-grid">
-        {recetas.map(receta => (
-          <div key={receta.id} className="receta-card">
-            <div className="card-content">
-              <h3>{receta.nombre}</h3>
-              <p className="descripcion">{receta.descripcion}</p>
-              <div className="receta-info">
-                <span className="categoria">{receta.categoria}</span>
-                <span className="tiempo">⏱️ {receta.tiempo}</span>
+      {loading ? (
+        <div className="loading">
+          <p>Cargando recetas...</p>
+        </div>
+      ) : (
+        <div className="recetas-grid">
+          {recetas.map(receta => (
+            <div key={receta.id_receta} className="receta-card">
+              <div className="card-content">
+                <h3>{receta.nombre}</h3>
+                <p className="descripcion">{receta.descripcion}</p>
+                <div className="receta-info">
+                  <span className="categoria">{receta.Categoria?.nombre || 'Sin categoría'}</span>
+                  <span className="tiempo">⏱️ {receta.tiempo_preparacion}</span>
+                </div>
+                <div className="dificultad">
+                  📊 {receta.dificultad}
+                </div>
+              </div>
+              <div className="card-actions">
+                <button className="edit-button">Editar</button>
+                <button 
+                  className="delete-button"
+                  onClick={() => eliminarReceta(receta.id_receta)}
+                >
+                  Eliminar
+                </button>
               </div>
             </div>
-            <div className="card-actions">
-              <button className="edit-button">Editar</button>
-              <button 
-                className="delete-button"
-                onClick={() => eliminarReceta(receta.id)}
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

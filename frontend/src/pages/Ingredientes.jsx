@@ -100,25 +100,31 @@ function Ingredientes() {
         </div>
       )}
 
-      <div className="ingredientes-grid">
-        {ingredientes.map(ingrediente => (
-          <div key={ingrediente.id} className="ingrediente-card">
-            <div className="card-content">
-              <h3>{ingrediente.nombre}</h3>
-              <p>Unidad: {ingrediente.unidad}</p>
+      {loading ? (
+        <div className="loading">
+          <p>Cargando ingredientes...</p>
+        </div>
+      ) : (
+        <div className="ingredientes-grid">
+          {ingredientes.map(ingrediente => (
+            <div key={ingrediente.id_ingrediente} className="ingrediente-card">
+              <div className="card-content">
+                <h3>{ingrediente.nombre}</h3>
+                <p>Unidad: {ingrediente.unidad_medida}</p>
+              </div>
+              <div className="card-actions">
+                <button className="edit-button">Editar</button>
+                <button 
+                  className="delete-button"
+                  onClick={() => eliminarIngrediente(ingrediente.id_ingrediente)}
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
-            <div className="card-actions">
-              <button className="edit-button">Editar</button>
-              <button 
-                className="delete-button"
-                onClick={() => eliminarIngrediente(ingrediente.id)}
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -5,23 +5,37 @@ const Receta = require('./Receta')
 const IngredienteReceta = require('./IngredienteReceta')
 const Compra = require('./Compra')
 
-Categoria.hasMany(Receta, { foreignKey: 'id_categoria' })
-Receta.belongsTo(Categoria, { foreignKey: 'id_categoria' })
+Categoria.hasMany(Receta, { 
+  foreignKey: 'id_categoria',
+  as: 'Recetas'
+})
+Receta.belongsTo(Categoria, { 
+  foreignKey: 'id_categoria',
+  as: 'Categoria'
+})
 
 Receta.belongsToMany(Ingrediente, {
   through: IngredienteReceta,
   foreignKey: 'id_receta',
-  otherKey: 'id_ingrediente'
+  otherKey: 'id_ingrediente',
+  as: 'Ingredientes'
 })
 
 Ingrediente.belongsToMany(Receta, {
   through: IngredienteReceta,
   foreignKey: 'id_ingrediente',
-  otherKey: 'id_receta'
+  otherKey: 'id_receta',
+  as: 'Recetas'
 })
 
-Ingrediente.hasMany(Compra, { foreignKey: 'id_ingrediente' })
-Compra.belongsTo(Ingrediente, { foreignKey: 'id_ingrediente' })
+Ingrediente.hasMany(Compra, { 
+  foreignKey: 'id_ingrediente',
+  as: 'Compras'
+})
+Compra.belongsTo(Ingrediente, { 
+  foreignKey: 'id_ingrediente',
+  as: 'Ingrediente'
+})
 
 module.exports = {
   sequelize,
