@@ -128,6 +128,7 @@ function Ingredientes() {
   const [loading, setLoading] = useState(true)
   const [nuevoIngrediente, setNuevoIngrediente] = useState({ nombre: '', unidad: '' })
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  const [editandoIngrediente, setEditandoIngrediente] = useState(null)
 
   useEffect(() => {
     cargarIngredientes()
@@ -158,6 +159,35 @@ function Ingredientes() {
     }
   }
 
+  const editarIngrediente = (ingrediente) => {
+    setEditandoIngrediente(ingrediente)
+    setNuevoIngrediente({ 
+      nombre: ingrediente.nombre, 
+      unidad: ingrediente.unidad_medida 
+    })
+    setMostrarFormulario(true)
+  }
+
+  const actualizarIngrediente = async () => {
+    if (nuevoIngrediente.nombre && nuevoIngrediente.unidad && editandoIngrediente) {
+      try {
+        await ingredientesAPI.update(editandoIngrediente.id_ingrediente, nuevoIngrediente)
+        setNuevoIngrediente({ nombre: '', unidad: '' })
+        setEditandoIngrediente(null)
+        setMostrarFormulario(false)
+        cargarIngredientes()
+      } catch (error) {
+        console.error('Error actualizando ingrediente:', error)
+      }
+    }
+  }
+
+  const cancelarEdicion = () => {
+    setNuevoIngrediente({ nombre: '', unidad: '' })
+    setEditandoIngrediente(null)
+    setMostrarFormulario(false)
+  }
+
   const eliminarIngrediente = async (id) => {
     try {
       await ingredientesAPI.delete(id)
@@ -185,7 +215,7 @@ function Ingredientes() {
       {mostrarFormulario && (
         <div className="form-modal">
           <div className="form-container">
-            <h3>Nuevo Ingrediente</h3>
+            <h3>{editandoIngrediente ? 'Editar Ingrediente' : 'Nuevo Ingrediente'}</h3>
             <div className="form-group">
               <input
                 type="text"
@@ -211,11 +241,14 @@ function Ingredientes() {
               </select>
             </div>
             <div className="form-actions">
-              <button className="cancel-button" onClick={() => setMostrarFormulario(false)}>
+              <button className="cancel-button" onClick={cancelarEdicion}>
                 Cancelar
               </button>
-              <button className="save-button" onClick={agregarIngrediente}>
-                Guardar
+              <button 
+                className="save-button" 
+                onClick={editandoIngrediente ? actualizarIngrediente : agregarIngrediente}
+              >
+                {editandoIngrediente ? 'Actualizar' : 'Guardar'}
               </button>
             </div>
           </div>
@@ -235,7 +268,12 @@ function Ingredientes() {
                 <p style={styles.cardText}>Unidad: {ingrediente.unidad_medida}</p>
               </div>
               <div style={styles.cardActions}>
-                <button style={styles.editButton}>Editar</button>
+                <button 
+                  style={styles.editButton}
+                  onClick={() => editarIngrediente(ingrediente)}
+                >
+                  Editar
+                </button>
                 <button 
                   style={styles.deleteButton}
                   onClick={() => eliminarIngrediente(ingrediente.id_ingrediente)}

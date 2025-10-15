@@ -13,6 +13,7 @@ function Recetas() {
     dificultad: 'Fácil'
   })
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  const [editandoReceta, setEditandoReceta] = useState(null)
 
   useEffect(() => {
     cargarDatos()
@@ -47,6 +48,38 @@ function Recetas() {
     }
   }
 
+  const editarReceta = (receta) => {
+    setEditandoReceta(receta)
+    setNuevaReceta({
+      nombre: receta.nombre,
+      descripcion: receta.descripcion,
+      categoria: receta.Categoria?.id_categoria || '',
+      tiempo: receta.tiempo_preparacion,
+      dificultad: receta.dificultad
+    })
+    setMostrarFormulario(true)
+  }
+
+  const actualizarReceta = async () => {
+    if (nuevaReceta.nombre && nuevaReceta.descripcion && editandoReceta) {
+      try {
+        await recetasAPI.update(editandoReceta.id_receta, nuevaReceta)
+        setNuevaReceta({ nombre: '', descripcion: '', categoria: '', tiempo: '', dificultad: 'Fácil' })
+        setEditandoReceta(null)
+        setMostrarFormulario(false)
+        cargarDatos()
+      } catch (error) {
+        console.error('Error actualizando receta:', error)
+      }
+    }
+  }
+
+  const cancelarEdicion = () => {
+    setNuevaReceta({ nombre: '', descripcion: '', categoria: '', tiempo: '', dificultad: 'Fácil' })
+    setEditandoReceta(null)
+    setMostrarFormulario(false)
+  }
+
   const eliminarReceta = async (id) => {
     try {
       await recetasAPI.delete(id)
@@ -74,7 +107,7 @@ function Recetas() {
       {mostrarFormulario && (
         <div className="form-modal">
           <div className="form-container">
-            <h3>Nueva Receta</h3>
+            <h3>{editandoReceta ? 'Editar Receta' : 'Nueva Receta'}</h3>
             <div className="form-group">
               <input
                 type="text"
@@ -123,11 +156,14 @@ function Recetas() {
               </select>
             </div>
             <div className="form-actions">
-              <button className="cancel-button" onClick={() => setMostrarFormulario(false)}>
+              <button className="cancel-button" onClick={cancelarEdicion}>
                 Cancelar
               </button>
-              <button className="save-button blue" onClick={agregarReceta}>
-                Guardar
+              <button 
+                className="save-button blue" 
+                onClick={editandoReceta ? actualizarReceta : agregarReceta}
+              >
+                {editandoReceta ? 'Actualizar' : 'Guardar'}
               </button>
             </div>
           </div>
@@ -154,7 +190,12 @@ function Recetas() {
                 </div>
               </div>
               <div className="card-actions">
-                <button className="edit-button">Editar</button>
+                <button 
+                  className="edit-button"
+                  onClick={() => editarReceta(receta)}
+                >
+                  Editar
+                </button>
                 <button 
                   className="delete-button"
                   onClick={() => eliminarReceta(receta.id_receta)}

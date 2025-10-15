@@ -12,6 +12,7 @@ function BuscarRecetas() {
   const [recetasEncontradas, setRecetasEncontradas] = useState([])
   const [loading, setLoading] = useState(true)
   const [buscando, setBuscando] = useState(false)
+  const [recetaSeleccionada, setRecetaSeleccionada] = useState(null)
 
   useEffect(() => {
     cargarDatos()
@@ -63,6 +64,14 @@ function BuscarRecetas() {
     } else {
       setIngredientesSeleccionados([...ingredientesSeleccionados, ingredienteId])
     }
+  }
+
+  const mostrarReceta = (receta) => {
+    setRecetaSeleccionada(receta)
+  }
+
+  const cerrarReceta = () => {
+    setRecetaSeleccionada(null)
   }
 
   const buscarRecetas = async () => {
@@ -206,13 +215,127 @@ function BuscarRecetas() {
                       </ul>
                     </div>
                   </div>
-                  <button className="cook-button">Cocinar</button>
+                  <button 
+                    className="cook-button"
+                    onClick={() => mostrarReceta(receta)}
+                  >
+                    Cocinar
+                  </button>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Modal de receta completa */}
+      {recetaSeleccionada && (
+        <div className="form-modal">
+          <div className="form-container" style={{ maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.5rem', color: '#1f2937' }}>
+                {recetaSeleccionada.nombre}
+              </h3>
+              <button 
+                onClick={cerrarReceta}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#6b7280',
+                  padding: '0.5rem'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h4 style={{ color: '#374151', marginBottom: '0.5rem' }}>Descripción:</h4>
+              <p style={{ color: '#6b7280', lineHeight: '1.6', margin: 0 }}>
+                {recetaSeleccionada.descripcion}
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div>
+                <h4 style={{ color: '#374151', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Categoría:</h4>
+                <p style={{ color: '#6b7280', margin: 0 }}>
+                  {recetaSeleccionada.Categoria?.nombre || 'Sin categoría'}
+                </p>
+              </div>
+              <div>
+                <h4 style={{ color: '#374151', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Tiempo:</h4>
+                <p style={{ color: '#6b7280', margin: 0 }}>
+                  {recetaSeleccionada.tiempo_preparacion}
+                </p>
+              </div>
+              <div>
+                <h4 style={{ color: '#374151', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Dificultad:</h4>
+                <p style={{ color: '#6b7280', margin: 0 }}>
+                  {recetaSeleccionada.dificultad}
+                </p>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h4 style={{ color: '#374151', marginBottom: '0.5rem' }}>Ingredientes necesarios:</h4>
+              <ul style={{ 
+                listStyle: 'none', 
+                padding: 0, 
+                margin: 0,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '0.5rem'
+              }}>
+                {recetaSeleccionada.Ingredientes?.map(ing => (
+                  <li key={ing.id_ingrediente} style={{
+                    background: '#f9fafb',
+                    padding: '0.75rem',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <span style={{ fontWeight: '600', color: '#8B5CF6' }}>
+                      {ing.IngredienteReceta?.cantidad} {ing.unidad_medida}
+                    </span>
+                    <span style={{ color: '#6b7280', marginLeft: '0.5rem' }}>
+                      {ing.nombre}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <button 
+                onClick={cerrarReceta}
+                style={{
+                  background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.75rem 2rem',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.transform = 'translateY(-2px)'
+                  e.target.style.boxShadow = '0 8px 25px rgba(139, 92, 246, 0.3)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.transform = 'translateY(0)'
+                  e.target.style.boxShadow = 'none'
+                }}
+              >
+                ¡A cocinar!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
