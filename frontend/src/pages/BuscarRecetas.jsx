@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ingredientesAPI, recetasAPI, categoriasAPI } from '../services/api'
 
 function BuscarRecetas() {
+  const [searchParams] = useSearchParams()
   const [ingredientesDisponibles, setIngredientesDisponibles] = useState([])
   const [categorias, setCategorias] = useState([])
   const [ingredientesSeleccionados, setIngredientesSeleccionados] = useState([])
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   const [recetasEncontradas, setRecetasEncontradas] = useState([])
   const [loading, setLoading] = useState(true)
   const [buscando, setBuscando] = useState(false)
@@ -13,6 +16,14 @@ function BuscarRecetas() {
   useEffect(() => {
     cargarDatos()
   }, [])
+
+  useEffect(() => {
+    const searchFromURL = searchParams.get('search')
+    if (searchFromURL) {
+      setSearchTerm(searchFromURL)
+      buscarPorTexto(searchFromURL)
+    }
+  }, [searchParams])
 
   const cargarDatos = async () => {
     try {
@@ -27,6 +38,22 @@ function BuscarRecetas() {
       console.error('Error cargando datos:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const buscarPorTexto = async (texto) => {
+    try {
+      setBuscando(true)
+      const response = await recetasAPI.getAll()
+      const recetasFiltradas = response.data.filter(receta => 
+        receta.nombre.toLowerCase().includes(texto.toLowerCase()) ||
+        receta.descripcion.toLowerCase().includes(texto.toLowerCase())
+      )
+      setRecetasEncontradas(recetasFiltradas)
+    } catch (error) {
+      console.error('Error buscando por texto:', error)
+    } finally {
+      setBuscando(false)
     }
   }
 
@@ -85,6 +112,27 @@ function BuscarRecetas() {
             </div>
           ) : (
             <>
+              <div className="filter-section">
+                <h4>Buscar por Nombre</h4>
+                <div className="text-search-container">
+                  <input
+                    type="text"
+                    className="text-search-input"
+                    placeholder="Buscar recetas por nombre..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="text-search-button"
+                    onClick={() => buscarPorTexto(searchTerm)}
+                    disabled={!searchTerm.trim() || buscando}
+                  >
+                    🔍
+                  </button>
+                </div>
+              </div>
+
               <div className="filter-section">
                 <h4>Filtrar por Categoría</h4>
                 <select

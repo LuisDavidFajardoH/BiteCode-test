@@ -162,6 +162,17 @@
   transform: translateY(-50%);
   color: rgba(0, 0, 0, 0.6);
   font-size: 1.2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.search-icon:hover {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8B5CF6;
 }
 
 .hero-plate {
@@ -897,6 +908,51 @@
 
 .ingrediente-nombre {
   color: #6b7280;
+}
+
+.text-search-container {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.text-search-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background: white;
+  color: #1f2937;
+  transition: border-color 0.3s ease;
+}
+
+.text-search-input:focus {
+  outline: none;
+  border-color: #8B5CF6;
+}
+
+.text-search-button {
+  padding: 0.75rem 1rem;
+  background: linear-gradient(45deg, #8B5CF6, #7C3AED);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 50px;
+}
+
+.text-search-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.text-search-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .cook-button {

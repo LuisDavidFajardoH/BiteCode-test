@@ -1,6 +1,16 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 
 function Home() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const navigate = useNavigate()
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    if (searchTerm.trim()) {
+      navigate(`/buscar-recetas?search=${encodeURIComponent(searchTerm.trim())}`)
+    }
+  }
   const features = [
     {
       title: 'Gestionar Ingredientes',
@@ -66,15 +76,17 @@ function Home() {
             con lo que tienes en casa.
           </p>
           
-          <div className="hero-search">
+          <form className="hero-search" onSubmit={handleSearch}>
             <input 
               type="text"
               style={{color: 'black'}}
               className="search-input" 
               placeholder="Buscar recetas..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className="search-icon">🔍</div>
-          </div>
+            <button type="submit" className="search-icon">🔍</button>
+          </form>
         </div>
       </div>
 
